@@ -127,6 +127,9 @@
     {#each weights as weight, index (weight.topicId)}
       <div 
         class="topic-item bg-white px-3 py-2 border-b border-gray-200 last:border-0 relative flex items-center cursor-move hover:bg-blue-50 transition-colors"
+        role="button"
+        tabindex="0"
+        aria-label="Drag to reorder topic: {getTopicName(weight.topicId)}"
         draggable="true"
         on:dragstart={(e) => onDragStart(e, index)}
         on:dragover={(e) => onDragOver(e, index)}

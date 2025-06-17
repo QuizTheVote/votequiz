@@ -1,11 +1,10 @@
 <script lang="ts">
-  import type { Candidate, Topic } from '$lib/sheets';
+  import type { Candidate } from '$lib/sheets';
   
   export let candidates: Array<Candidate & { 
     matchPercentage: number, 
     topicMatches?: { topicId: string, topicName: string, matchPercentage: number }[] 
   }>;
-  export let topics: Topic[] = [];
   export let expandedCandidateId: string | null = null;
   
   function toggleCandidateDetails(candidateId: string) {

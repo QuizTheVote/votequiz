@@ -92,13 +92,23 @@ function validateSheetData(tabletop: any): string | null {
 }
 
 /**
+ * Validates that a string is a properly formatted Google Sheet ID
+ * @param id The Sheet ID to validate
+ * @returns True if the ID appears to be valid
+ */
+function isValidSheetId(id: string): boolean {
+  // Google Sheet IDs are typically 44 characters long and contain letters, numbers, hyphens, and underscores
+  return /^[a-zA-Z0-9-_]{30,50}$/.test(id);
+}
+
+/**
  * Fetches data from a Google Sheet using Tabletop.js
  * @param sheetId The ID of the Google Sheet
  * @returns Promise that resolves to the QuizData object
  */
-export async function fetchSheetData(sheetId: string): Promise<QuizData> {
-  if (!sheetId) {
-    throw new Error('Invalid Sheet ID. Please update the SHEET_ID constant with your actual Google Sheet ID.');
+export async function fetchSheetData(sheetId: string | null): Promise<QuizData> {
+  if (!sheetId || !isValidSheetId(sheetId)) {
+    throw new Error('Valid Google Sheet ID required. Format: 1ayBgqVYpBirba1Scg8zgYlrmk4K61HrxgvrsYJO7G7Y');
   }
 
   return new Promise((resolve, reject) => {

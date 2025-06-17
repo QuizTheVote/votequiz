@@ -7,11 +7,9 @@
   import TopicImportanceRanker from '$lib/components/TopicImportanceRanker.svelte';
   import EnhancedResults from '$lib/components/EnhancedResults.svelte';
 
-  // Demo Sheet ID - replace with your actual Google Sheet ID
-  const SHEET_ID = '1ayBgqVYpBirba1Scg8zgYlrmk4K61HrxgvrsYJO7G7Y';
-  
-  // Set to true to use sample data instead of fetching from Google Sheets
-  const USE_SAMPLE_DATA = true;
+  // Configuration variables - now determined by URL parameters
+  let sheetId: string | null = null;
+  let useSampleData = false;
   
   let quizData: QuizData | null = null;
   let currentQuestionIndex = -1; // -1 for welcome screen, questions.length for topic ranking, questions.length + 1 for results
@@ -28,21 +26,25 @@
 
   onMount(async () => {
     try {
-      if (USE_SAMPLE_DATA) {
-        // Use sample data for development
+      // Read URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      sheetId = urlParams.get('sheet');
+      useSampleData = urlParams.get('demo') === 'true' || !sheetId;
+      
+      if (useSampleData) {
+        // Use sample data for development or when no sheet ID provided
         quizData = await getSampleData();
         loading = false;
         return;
       }
       
-      // Check if we're using the example sheet ID
-      if (SHEET_ID === '1ayBgqVYpBirba1Scg8zgYlrmk4K61HrxgvrsYJO7G7Y' && false) {
-        error = 'Please replace the example Sheet ID with your actual Google Sheet ID';
+      if (!sheetId) {
+        error = 'No Google Sheet ID provided. Add ?sheet=YOUR_SHEET_ID to the URL or ?demo=true for sample data.';
         loading = false;
         return;
       }
       
-      quizData = await fetchSheetData(SHEET_ID);
+      quizData = await fetchSheetData(sheetId);
       loading = false;
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -168,7 +170,7 @@
       <p>{error}</p>
     </div>
     
-    {#if devMode && SHEET_ID === '1ayBgqVYpBirba1Scg8zgYlrmk4K61HrxgvrsYJO7G7Y' && false}
+    {#if devMode && !useSampleData}
       <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
         <p class="font-bold">Developer Setup Instructions</p>
         <ol class="list-decimal ml-6 mt-2 space-y-2">
@@ -199,9 +201,9 @@
         Start Quiz
       </button>
       
-      {#if USE_SAMPLE_DATA && devMode}
+      {#if useSampleData && devMode}
         <div class="mt-8 p-3 bg-yellow-100 text-yellow-800 rounded text-sm">
-          Using sample data for development. Set <code>USE_SAMPLE_DATA = false</code> to use real Google Sheet data.
+          Using sample data for development. Add <code>?sheet=YOUR_SHEET_ID</code> to the URL to use real Google Sheet data.
         </div>
       {/if}
     </div>
@@ -283,7 +285,6 @@
       
       <EnhancedResults 
         candidates={candidateMatches} 
-        topics={quizData?.topics || []}
         bind:expandedCandidateId
       />
     </div>
