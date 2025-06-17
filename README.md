@@ -43,13 +43,13 @@ Set `USE_SAMPLE_DATA = true` in `src/routes/+page.svelte` to use the included St
 ## Development
 
 1. Install dependencies:
-   ```bash
+```bash
    npm install
    ```
 
 2. Start the development server:
-   ```bash
-   npm run dev
+```bash
+npm run dev
    ```
 
 3. Open your browser to http://localhost:5173/
@@ -65,9 +65,9 @@ We've included a data preparation Excel template in the `data-prep` folder that 
 The app is configured for static site deployment, making it easy to host on services like Netlify, Vercel, GitHub Pages, or any static hosting provider.
 
 1. Build the application:
-   ```bash
-   npm run build
-   ```
+```bash
+npm run build
+```
 
 2. The build output will be in the `build` directory, ready to deploy to any static hosting service.
 
