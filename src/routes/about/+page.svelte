@@ -1,63 +1,86 @@
-<script lang="ts">
-  // No script logic needed for this static page
-</script>
+<svelte:head>
+  <title>About - Candidate Matcher</title>
+  <meta name="description" content="Learn about the science and team behind the Candidate Matcher political quiz platform.">
+</svelte:head>
 
-<div class="container mx-auto px-4 py-8 max-w-3xl">
-  <h1 class="text-3xl font-bold mb-6">About the Election Candidate Matcher</h1>
-  
-  <div class="prose max-w-none">
-    <p class="text-lg mb-6">
-      The Candidate Matcher helps voters discover which candidates best align with their views on important issues in the current election.
-    </p>
-    
-    <h2 class="text-2xl font-semibold mt-8 mb-4">Why We Built This</h2>
-    <p>
-      Finding the candidate who best represents your values can be challenging. Campaign websites often focus on selective issues, and media coverage can emphasize personality over policy. Our goal is to:
-    </p>
-    <ul class="list-disc ml-8 mb-4">
-      <li>Help voters see how their views align with each candidate across multiple issues</li>
-      <li>Provide a neutral, transparent tool that doesn't favor any candidate or ideology</li>
-      <li>Encourage issue-based voting decisions rather than party-line voting</li>
-      <li>Simplify the process of comparing candidates on policy positions</li>
-    </ul>
-    
-    <h2 class="text-2xl font-semibold mt-8 mb-4">Our Values</h2>
-    
-    <h3 class="text-xl font-semibold mt-6 mb-3">Neutrality</h3>
-    <p>
-      We're committed to presenting issues and candidate positions without bias. Our questions are carefully worded to avoid leading language, and we base candidate positions on factual public statements and voting records.
-    </p>
-    
-    <h3 class="text-xl font-semibold mt-6 mb-3">Transparency</h3>
-    <p>
-      We believe in being open about how our tool works:
-    </p>
-    <ul class="list-disc ml-8 mb-4">
-      <li>Our <a href="/methodology" class="text-blue-600 hover:underline">methodology page</a> explains in detail how we match users to candidates</li>
-      <li>Our code is open-source and available for review</li>
-      <li>We clearly explain how we determine candidate positions</li>
-    </ul>
-    
-    <h3 class="text-xl font-semibold mt-6 mb-3">Privacy</h3>
-    <p>
-      Your responses to the quiz questions remain on your device and are not stored on any server. We do not track individual users or share your data with third parties.
-    </p>
-    
-    <h2 class="text-2xl font-semibold mt-8 mb-4">Our Team</h2>
-    <p>
-      The Candidate Matcher was created by a team of journalists, developers, and civic engagement experts committed to improving the democratic process through better information tools.
-    </p>
-    
-    <h2 class="text-2xl font-semibold mt-8 mb-4">Contact Us</h2>
-    <p>
-      Have feedback, questions, or suggestions? We'd love to hear from you:
-    </p>
-    <p>
-      <a href="mailto:feedback@candidate-matcher.org" class="text-blue-600 hover:underline">feedback@candidate-matcher.org</a>
-    </p>
-    
-    <div class="mt-8 border-t pt-4">
-      <a href="/" class="text-blue-600 hover:underline">&larr; Back to Quiz</a>
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <header class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <a href="/" class="text-2xl font-bold text-gray-900">🗳️ Candidate Matcher</a>
+        </div>
+        <nav class="flex space-x-6">
+          <a href="/" class="text-gray-600 hover:text-gray-900">Demo</a>
+          <a href="/newsroom" class="text-gray-600 hover:text-gray-900">For Newsrooms</a>
+          <a href="/about" class="text-blue-600 font-medium">About</a>
+          <a href="/methodology" class="text-gray-600 hover:text-gray-900">Methodology</a>
+        </nav>
+      </div>
     </div>
-  </div>
-</div> 
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-12">
+    <div class="bg-white rounded-xl shadow-lg p-8">
+      <h1 class="text-4xl font-bold text-gray-900 mb-8">About Candidate Matcher</h1>
+      
+      <div class="prose prose-lg max-w-none">
+        <h2>The Vision</h2>
+        <p>
+          Candidate Matcher represents a breakthrough in political engagement tools. Unlike traditional political quizzes 
+          that focus on surface-level policy positions, our platform uses scientifically-validated Social Value 
+          Orientation (SVO) research to measure the fundamental values that drive political behavior.
+        </p>
+
+        <h2>Why SVO Matters</h2>
+        <p>
+          After 40+ years of psychological research, we know that people's political preferences stem from deeper 
+          social orientations rather than just policy knowledge. Our questions reveal whether someone is:
+        </p>
+        <ul>
+          <li><strong>Prosocial/Cooperative:</strong> Values collective benefit and collaboration</li>
+          <li><strong>Individualistic:</strong> Focuses on personal outcomes and self-reliance</li>
+          <li><strong>Competitive:</strong> Motivated by relative advantage and winning</li>
+        </ul>
+
+        <h2>For Newsrooms</h2>
+        <p>
+          We've designed this platform specifically for journalists and civic organizations who want to engage 
+          their audiences with more meaningful political content. No coding required - just copy our template, 
+          add your local candidates, and embed the quiz on your website.
+        </p>
+
+        <h2>Technical Innovation</h2>
+        <p>
+          Our platform supports multiple question types and advanced matching algorithms:
+        </p>
+        <ul>
+          <li>Scale-based questions (5-point agreement, 3-point support)</li>
+          <li>Multiple choice and categorical questions</li>
+          <li>Jaccard similarity for complex preference matching</li>
+          <li>Weighted topic importance based on user priorities</li>
+        </ul>
+
+        <h2>Open Source</h2>
+        <p>
+          This project is open source and built with modern web technologies including SvelteKit, 
+          TypeScript, and Tailwind CSS. We believe in transparency and continuous improvement through 
+          community contributions.
+        </p>
+
+        <div class="mt-12 p-6 bg-blue-50 rounded-lg">
+          <h3 class="text-lg font-semibold mb-4">Ready to get started?</h3>
+          <div class="space-x-4">
+            <a href="/newsroom" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">
+              Create Your Quiz
+            </a>
+            <a href="/?svo=true&demo=true" class="border border-blue-600 text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50">
+              Try the Demo
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
