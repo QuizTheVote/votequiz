@@ -263,7 +263,7 @@
     <!-- Welcome Screen -->
     <div class="text-center">
       <h1 class="text-3xl font-bold mb-6">
-        Candidate Matcher Quiz
+        Quiz The Vote
         {#if useSVOMode}
           <span class="block text-lg font-normal text-blue-600 mt-2">
             🧠 SVO Framework (Beta)

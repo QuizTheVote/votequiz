@@ -1,6 +1,6 @@
 <svelte:head>
-  <title>About - Candidate Matcher</title>
-  <meta name="description" content="Learn about the science and team behind the Candidate Matcher political quiz platform.">
+  <title>About - Quiz The Vote</title>
+  <meta name="description" content="Learn about the science and team behind Quiz The Vote voter-candidate matching platform.">
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50">
@@ -9,7 +9,7 @@
     <div class="max-w-7xl mx-auto px-4 py-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
-          <a href="/" class="text-2xl font-bold text-gray-900">🗳️ Candidate Matcher</a>
+          <a href="/" class="text-2xl font-bold text-gray-900">🗳️ Quiz The Vote</a>
         </div>
         <nav class="flex space-x-6">
           <a href="/" class="text-gray-600 hover:text-gray-900">Demo</a>
@@ -23,14 +23,14 @@
 
   <main class="max-w-4xl mx-auto px-4 py-12">
     <div class="bg-white rounded-xl shadow-lg p-8">
-      <h1 class="text-4xl font-bold text-gray-900 mb-8">About Candidate Matcher</h1>
+      <h1 class="text-4xl font-bold text-gray-900 mb-8">About Quiz The Vote</h1>
       
       <div class="prose prose-lg max-w-none">
         <h2>The Vision</h2>
         <p>
-          Candidate Matcher represents a breakthrough in political engagement tools. Unlike traditional political quizzes 
-          that focus on surface-level policy positions, our platform uses scientifically-validated Social Value 
-          Orientation (SVO) research to measure the fundamental values that drive political behavior.
+          Quiz The Vote represents a breakthrough in political engagement tools for newsrooms. Unlike traditional political quizzes 
+          that focus on surface-level policy positions, our platform helps voters connect with candidates based on 
+          substantive policy positions and local issues that matter to their community.
         </p>
 
         <h2>Why SVO Matters</h2>

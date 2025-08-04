@@ -58,8 +58,8 @@
 </script>
 
 <svelte:head>
-  <title>Candidate Matcher for Newsrooms - Easy Political Quiz Tool</title>
-  <meta name="description" content="Create scientifically-grounded political candidate matching quizzes for your newsroom. No coding required - just copy our template and embed.">
+  <title>Quiz The Vote for Newsrooms - Voter-Candidate Matching Tool</title>
+  <meta name="description" content="Help voters connect with candidates based on policy positions, not party politics. Easy-to-use tool for newsrooms - no coding required.">
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -68,7 +68,7 @@
     <div class="max-w-7xl mx-auto px-4 py-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
-          <h1 class="text-2xl font-bold text-gray-900">🗳️ Candidate Matcher</h1>
+          <h1 class="text-2xl font-bold text-gray-900">🗳️ Quiz The Vote</h1>
           <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">For Newsrooms</span>
         </div>
         <nav class="flex space-x-6">
@@ -84,18 +84,22 @@
     <!-- Hero Section -->
     <div class="text-center mb-16">
       <h1 class="text-5xl font-bold text-gray-900 mb-6">
-        Political Quizzes Made Simple
+        Help Voters Connect with Candidates
       </h1>
       <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-        Create scientifically-grounded candidate matching quizzes for your newsroom. 
-        Based on 40+ years of Social Value Orientation research, not surface-level policy questions.
+        Give your newsroom a powerful tool to engage readers beyond political spin and party labels. 
+        Help voters discover candidates based on actual policy positions and local issues that matter to your community.
       </p>
       <div class="bg-white rounded-lg p-6 shadow-lg max-w-2xl mx-auto">
-        <h3 class="text-lg font-semibold mb-4">Why Choose Our Platform?</h3>
+        <h3 class="text-lg font-semibold mb-4">Move Beyond Party Politics</h3>
         <div class="grid md:grid-cols-2 gap-4 text-sm">
           <div class="flex items-start space-x-2">
             <span class="text-green-500">✓</span>
-            <span>Psychology-based questions</span>
+            <span>Policy over party labels</span>
+          </div>
+          <div class="flex items-start space-x-2">
+            <span class="text-green-500">✓</span>
+            <span>Local issues focus</span>
           </div>
           <div class="flex items-start space-x-2">
             <span class="text-green-500">✓</span>
@@ -103,11 +107,7 @@
           </div>
           <div class="flex items-start space-x-2">
             <span class="text-green-500">✓</span>
-            <span>Easy Google Sheets setup</span>
-          </div>
-          <div class="flex items-start space-x-2">
-            <span class="text-green-500">✓</span>
-            <span>Instant embed code</span>
+            <span>Ready in minutes</span>
           </div>
         </div>
       </div>
@@ -126,18 +126,19 @@
         </div>
         
         <p class="text-gray-600 mb-6">
-          Start with our pre-built Google Sheet template containing scientifically-designed SVO questions 
-          and sample political candidates. You can customize questions and add your local candidates.
+          Start with our template designed specifically for newsrooms to create meaningful voter-candidate connections. 
+          Add your local candidates and customize questions for the issues that matter most in your community.
         </p>
         
         <div class="bg-blue-50 rounded-lg p-6 mb-6">
           <h4 class="font-semibold mb-3">Template includes:</h4>
           <ul class="space-y-2 text-sm">
-            <li>• 5 Essential SVO questions (2-3 minute quiz)</li>
-            <li>• 5 Additional questions for deeper analysis</li>
-            <li>• 6 sample political candidates with diverse positions</li>
-            <li>• Active/Priority columns for easy customization</li>
-            <li>• Multiple question types (scales, choices, multiple choice)</li>
+            <li>• 5 Essential policy questions (quick 2-3 minute quiz)</li>
+            <li>• 5 Additional questions for deeper candidate comparison</li>
+            <li>• Sample candidates showing diverse viewpoints</li>
+            <li>• Easy customization - enable/disable any question</li>
+            <li>• Multiple question formats for different policy areas</li>
+            <li>• Built for local issues and candidate positions</li>
           </ul>
         </div>
         
@@ -160,12 +161,12 @@
         </div>
         
         <div class="space-y-4 text-gray-600">
-          <p><strong>Customize your quiz:</strong></p>
+          <p><strong>Make it relevant for your community:</strong></p>
           <ul class="list-disc list-inside space-y-1 ml-4">
-            <li>Replace sample candidates with your local candidates</li>
-            <li>Fill in candidate positions for each question</li>
-            <li>Enable/disable questions using the "Active" column</li>
-            <li>Modify question text to fit your election context</li>
+            <li><strong>Add local candidates</strong> - Replace samples with your election's actual candidates</li>
+            <li><strong>Focus on local issues</strong> - Customize questions for topics voters care about in your area</li>
+            <li><strong>Tailor the experience</strong> - Enable only the most relevant questions for your election</li>
+            <li><strong>Capture candidate positions</strong> - Fill in where each candidate stands on the issues</li>
           </ul>
           
           <p><strong>Publish to web:</strong></p>
@@ -181,11 +182,11 @@
       <div class="bg-white rounded-xl shadow-lg p-8" class:opacity-50={step < 2}>
         <div class="flex items-center mb-6">
           <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">3</div>
-          <h2 class="text-2xl font-bold">Generate Your Embed Code</h2>
+          <h2 class="text-2xl font-bold">Get Your Quiz Link & Embed Code</h2>
         </div>
         
         <p class="text-gray-600 mb-6">
-          Paste your published Google Sheet URL below to generate the embed code for your website.
+          Paste your published Google Sheet URL below to get both a direct link and embed code for your quiz.
         </p>
         
         <div class="space-y-4">
@@ -286,7 +287,7 @@
     <!-- Footer CTA -->
     <div class="text-center mt-16 p-8 bg-blue-600 text-white rounded-xl">
       <h2 class="text-2xl font-bold mb-4">Questions? Need Help?</h2>
-      <p class="mb-6">We're here to help you create engaging political content for your audience.</p>
+      <p class="mb-6">We're here to help you engage voters with meaningful candidate comparisons.</p>
       <div class="space-x-4">
         <a href="/methodology" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100">
           Learn About Our Methodology

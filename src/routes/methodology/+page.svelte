@@ -1,6 +1,6 @@
 <svelte:head>
-  <title>Methodology - Candidate Matcher</title>
-  <meta name="description" content="Scientific methodology behind the Social Value Orientation framework used in our political candidate matching algorithm.">
+  <title>Methodology - Quiz The Vote</title>
+  <meta name="description" content="Scientific methodology behind the Social Value Orientation framework used in our voter-candidate matching algorithm.">
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50">
@@ -9,7 +9,7 @@
     <div class="max-w-7xl mx-auto px-4 py-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
-          <a href="/" class="text-2xl font-bold text-gray-900">🗳️ Candidate Matcher</a>
+          <a href="/" class="text-2xl font-bold text-gray-900">🗳️ Quiz The Vote</a>
         </div>
         <nav class="flex space-x-6">
           <a href="/" class="text-gray-600 hover:text-gray-900">Demo</a>
