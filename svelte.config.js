@@ -15,7 +15,7 @@ const config = {
 			// Static site generation for GitHub Pages
 			pages: 'build',
 			assets: 'build',
-			fallback: 'index.html',
+			fallback: '404.html',
 			precompress: false,
 			strict: false
 		}),
@@ -29,7 +29,7 @@ const config = {
 		prerender: {
 			handleHttpError: 'warn',
 			handleMissingId: 'warn',
-			entries: ['*']
+			entries: ['/', '/about', '/methodology', '/newsroom']
 		},
 		
 		// Enable SPA mode for static site hosting
