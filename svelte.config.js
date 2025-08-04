@@ -19,6 +19,11 @@ const config = {
 			precompress: false
 		}),
 		
+		// Configure base path for GitHub Pages
+		paths: {
+			base: process.env.NODE_ENV === 'production' ? '/votequiz' : ''
+		},
+		
 		// Enable SPA mode for static site hosting
 		alias: {
 			$lib: './src/lib'
