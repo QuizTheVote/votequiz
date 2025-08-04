@@ -13,9 +13,9 @@
         </div>
         <nav class="flex space-x-6">
           <a href="/" class="text-gray-600 hover:text-gray-900">Demo</a>
-          <a href="/newsroom" class="text-gray-600 hover:text-gray-900">For Newsrooms</a>
-          <a href="/about" class="text-gray-600 hover:text-gray-900">About</a>
-          <a href="/methodology" class="text-blue-600 font-medium">Methodology</a>
+          <a href="/newsroom.html" class="text-gray-600 hover:text-gray-900">For Newsrooms</a>
+          <a href="/about.html" class="text-gray-600 hover:text-gray-900">About</a>
+          <a href="/methodology.html" class="text-blue-600 font-medium">Methodology</a>
         </nav>
       </div>
     </div>
@@ -144,7 +144,7 @@
             <a href="/?svo=true&demo=true" class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700">
               Try SVO Demo
             </a>
-            <a href="/newsroom" class="border border-green-600 text-green-600 px-6 py-2 rounded-lg font-semibold hover:bg-green-50">
+            <a href="/newsroom.html" class="border border-green-600 text-green-600 px-6 py-2 rounded-lg font-semibold hover:bg-green-50">
               Create Your Quiz
             </a>
           </div>

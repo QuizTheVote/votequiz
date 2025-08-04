@@ -73,8 +73,8 @@
         </div>
         <nav class="flex space-x-6">
           <a href="/" class="text-gray-600 hover:text-gray-900">Demo</a>
-          <a href="/about" class="text-gray-600 hover:text-gray-900">About</a>
-          <a href="/methodology" class="text-gray-600 hover:text-gray-900">Methodology</a>
+          <a href="/about.html" class="text-gray-600 hover:text-gray-900">About</a>
+          <a href="/methodology.html" class="text-gray-600 hover:text-gray-900">Methodology</a>
         </nav>
       </div>
     </div>
@@ -289,7 +289,7 @@
       <h2 class="text-2xl font-bold mb-4">Questions? Need Help?</h2>
       <p class="mb-6">We're here to help you engage voters with meaningful candidate comparisons.</p>
       <div class="space-x-4">
-        <a href="/methodology" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100">
+        <a href="/methodology.html" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100">
           Learn About Our Methodology
         </a>
         <a href="/?svo=true&demo=true" class="border border-white text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">

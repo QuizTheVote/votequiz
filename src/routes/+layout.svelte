@@ -11,6 +11,6 @@
 
 <footer class="bg-white border-t py-8 mt-12">
   <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
-    <p>© {new Date().getFullYear()} Candidate Matcher | <a href="https://github.com/your-org/election-quiz" class="hover:underline">Open Source</a> under MIT License</p>
+    <p>© {new Date().getFullYear()} Quiz The Vote | Help voters connect with candidates based on policy, not party</p>
   </div>
 </footer>
