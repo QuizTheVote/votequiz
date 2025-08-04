@@ -1,8 +1,14 @@
-import type { CandidateAnswer, Candidate, Question, Topic, TopicImportance } from './sheets';
+import type { CandidateAnswer, Candidate, Question, Topic, TopicImportance, CandidateAnswerSVO, QuestionSVO } from './sheets';
 
 export interface UserAnswer {
   questionId: string;
   value: number;
+}
+
+// New interface for SVO user answers that support mixed data types
+export interface UserAnswerSVO {
+  questionId: string;
+  value: number | string;
 }
 
 export interface UserTopicWeight {
@@ -184,6 +190,234 @@ export function calculateMatches(
   }));
   
   // Sort by match percentage (descending)
+  return candidateMatches.sort((a, b) => b.matchPercentage - a.matchPercentage);
+}
+
+//
+// NEW SVO-BASED SCORING FUNCTIONS
+//
+
+/**
+ * Calculates Jaccard similarity between two sets (for multiple choice questions)
+ * @param userSelections Array of user's selected options
+ * @param candidateSelections Array of candidate's selected options  
+ * @returns Jaccard similarity coefficient (0-1)
+ */
+export function jaccardSimilarity(userSelections: string[], candidateSelections: string[]): number {
+  if (userSelections.length === 0 && candidateSelections.length === 0) {
+    return 1.0; // Both empty = perfect match
+  }
+  
+  const set1 = new Set(userSelections);
+  const set2 = new Set(candidateSelections);
+  const intersection = new Set([...set1].filter(x => set2.has(x)));
+  const union = new Set([...set1, ...set2]);
+  
+  return intersection.size / union.size;
+}
+
+/**
+ * Calculates similarity for a single question based on its type
+ * @param userAnswer User's answer (number or string)
+ * @param candidateAnswer Candidate's answer (number or string)
+ * @param questionType Type of question
+ * @returns Similarity score (0-1)
+ */
+export function calculateQuestionSimilarity(
+  userAnswer: number | string,
+  candidateAnswer: number | string,
+  questionType: string
+): number {
+  switch (questionType) {
+    case 'agree_5':
+      // 5-point scale: calculate normalized distance
+      if (typeof userAnswer === 'number' && typeof candidateAnswer === 'number') {
+        return 1 - Math.abs(userAnswer - candidateAnswer) / 4; // 4 is max distance (5-1)
+      }
+      return 0;
+
+    case 'support_3':
+      // 3-point scale: calculate normalized distance
+      if (typeof userAnswer === 'number' && typeof candidateAnswer === 'number') {
+        return 1 - Math.abs(userAnswer - candidateAnswer) / 2; // 2 is max distance (3-1)
+      }
+      return 0;
+
+    case 'pick_1_3':
+    case 'pick_1_4':
+    case 'pick_1_5':
+    case 'binary_choice':
+      // Categorical: exact match or no match
+      return userAnswer === candidateAnswer ? 1.0 : 0.0;
+
+    case 'multiple_choice':
+      // Multiple choice: use Jaccard similarity
+      if (typeof userAnswer === 'string' && typeof candidateAnswer === 'string') {
+        const userSelections = userAnswer.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        const candidateSelections = candidateAnswer.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        return jaccardSimilarity(userSelections, candidateSelections);
+      }
+      return 0;
+
+    default:
+      // Unknown type: assume exact match
+      return userAnswer === candidateAnswer ? 1.0 : 0.0;
+  }
+}
+
+/**
+ * Calculates match percentages for SVO questions with mixed data types
+ * @param userAnswers Array of user answers with mixed types
+ * @param candidateAnswers Array of candidate answers with mixed types
+ * @param candidates Array of candidates
+ * @param questions Array of SVO questions
+ * @returns Array of candidates with match percentages, sorted by match percentage
+ */
+export function calculateSVOMatches(
+  userAnswers: UserAnswerSVO[],
+  candidateAnswers: CandidateAnswerSVO[],
+  candidates: Candidate[],
+  questions: QuestionSVO[]
+): Array<Candidate & { matchPercentage: number }> {
+  // Filter to only active questions
+  const activeQuestions = questions.filter(q => q.active);
+  const activeQuestionIds = activeQuestions.map(q => q.id);
+  
+  // Calculate raw similarity scores for each candidate
+  const candidateScores = candidates.map(candidate => {
+    let totalSimilarity = 0;
+    let questionCount = 0;
+    
+    for (const question of activeQuestions) {
+      const userAnswer = userAnswers.find(a => a.questionId === question.id);
+      const candidateAnswer = candidateAnswers.find(
+        a => a.candidateId === candidate.id && a.questionId === question.id
+      );
+      
+      if (userAnswer && candidateAnswer) {
+        const similarity = calculateQuestionSimilarity(
+          userAnswer.value,
+          candidateAnswer.value,
+          question.type
+        );
+        totalSimilarity += similarity;
+        questionCount++;
+      }
+    }
+    
+    // Calculate average similarity across all questions
+    const averageSimilarity = questionCount > 0 ? totalSimilarity / questionCount : 0;
+    
+    return {
+      ...candidate,
+      rawScore: averageSimilarity
+    };
+  });
+  
+  // Convert to percentages (0-100)
+  const candidateMatches = candidateScores.map(candidate => ({
+    ...candidate,
+    matchPercentage: Math.round(candidate.rawScore * 100)
+  }));
+  
+  // Sort by match percentage (descending)
+  return candidateMatches.sort((a, b) => b.matchPercentage - a.matchPercentage);
+}
+
+/**
+ * Calculates weighted SVO matches with topic importance
+ * @param userAnswers Array of user answers with mixed types
+ * @param userTopicWeights Array of user topic weights
+ * @param candidateAnswers Array of candidate answers with mixed types
+ * @param candidates Array of candidates
+ * @param questions Array of SVO questions
+ * @param topics Array of topics
+ * @returns Array of candidates with match percentages and topic breakdowns
+ */
+export function calculateWeightedSVOMatches(
+  userAnswers: UserAnswerSVO[],
+  userTopicWeights: UserTopicWeight[],
+  candidateAnswers: CandidateAnswerSVO[],
+  candidates: Candidate[],
+  questions: QuestionSVO[],
+  topics: Topic[]
+): Array<Candidate & { 
+  matchPercentage: number, 
+  topicMatches: { topicId: string, topicName: string, matchPercentage: number }[] 
+}> {
+  // Filter to only active questions
+  const activeQuestions = questions.filter(q => q.active);
+  
+  // Create a mapping of questions to their topics
+  const questionTopicMap = activeQuestions.reduce((map, question) => {
+    map[question.id] = question.topic;
+    return map;
+  }, {} as Record<string, string>);
+  
+  // Create a mapping of topics to their weights
+  const topicWeightMap = userTopicWeights.reduce((map, weight) => {
+    map[weight.topicId] = weight.weight;
+    return map;
+  }, {} as Record<string, number>);
+  
+  // Calculate topic-level matches for each candidate
+  const candidateMatches = candidates.map(candidate => {
+    // Group questions by topic and calculate topic-level similarities
+    const topicSimilarities: Record<string, { total: number, count: number }> = {};
+    
+    for (const question of activeQuestions) {
+      const userAnswer = userAnswers.find(a => a.questionId === question.id);
+      const candidateAnswer = candidateAnswers.find(
+        a => a.candidateId === candidate.id && a.questionId === question.id
+      );
+      
+      if (userAnswer && candidateAnswer) {
+        const similarity = calculateQuestionSimilarity(
+          userAnswer.value,
+          candidateAnswer.value,
+          question.type
+        );
+        
+        const topicId = question.topic;
+        if (!topicSimilarities[topicId]) {
+          topicSimilarities[topicId] = { total: 0, count: 0 };
+        }
+        topicSimilarities[topicId].total += similarity;
+        topicSimilarities[topicId].count++;
+      }
+    }
+    
+    // Calculate topic averages and apply weights
+    let weightedTotal = 0;
+    let totalWeight = 0;
+    const topicMatches: { topicId: string, topicName: string, matchPercentage: number }[] = [];
+    
+    for (const [topicId, similarity] of Object.entries(topicSimilarities)) {
+      const topicAverage = similarity.count > 0 ? similarity.total / similarity.count : 0;
+      const topicWeight = topicWeightMap[topicId] || 1;
+      const topic = topics.find(t => t.id === topicId);
+      
+      weightedTotal += topicAverage * topicWeight;
+      totalWeight += topicWeight;
+      
+      topicMatches.push({
+        topicId,
+        topicName: topic?.name || topicId,
+        matchPercentage: Math.round(topicAverage * 100)
+      });
+    }
+    
+    // Calculate overall weighted average
+    const overallMatch = totalWeight > 0 ? weightedTotal / totalWeight : 0;
+    
+    return {
+      ...candidate,
+      matchPercentage: Math.round(overallMatch * 100),
+      topicMatches: topicMatches.sort((a, b) => b.matchPercentage - a.matchPercentage)
+    };
+  });
+  
+  // Sort by overall match percentage (descending)
   return candidateMatches.sort((a, b) => b.matchPercentage - a.matchPercentage);
 }
 

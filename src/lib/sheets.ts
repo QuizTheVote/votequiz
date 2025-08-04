@@ -17,10 +17,29 @@ export interface Question {
   type?: 'general' | 'local';
 }
 
+// New enhanced question interface for SVO framework
+export interface QuestionSVO {
+  id: string;
+  text: string;
+  topic: string;
+  explanation?: string;
+  type: 'agree_5' | 'pick_1_3' | 'pick_1_4' | 'pick_1_5' | 'binary_choice' | 'support_3' | 'multiple_choice';
+  priority: 'Essential' | 'Additional';
+  active: boolean;
+  options: string[];
+}
+
 export interface CandidateAnswer {
   candidateId: string;
   questionId: string;
   value: number;
+}
+
+// New enhanced candidate answer interface for SVO framework
+export interface CandidateAnswerSVO {
+  candidateId: string;
+  questionId: string;
+  value: number | string; // Support both numeric scales and text choices
 }
 
 export interface Topic {
@@ -45,6 +64,15 @@ export interface QuizData {
   candidates: Candidate[];
   questions: Question[];
   candidateAnswers: CandidateAnswer[];
+  topics: Topic[];
+  topicImportance?: TopicImportance[];
+}
+
+// New enhanced quiz data interface for SVO framework
+export interface QuizDataSVO {
+  candidates: Candidate[];
+  questions: QuestionSVO[];
+  candidateAnswers: CandidateAnswerSVO[];
   topics: Topic[];
   topicImportance?: TopicImportance[];
 }
@@ -102,7 +130,126 @@ function isValidSheetId(id: string): boolean {
 }
 
 /**
- * Fetches data from a Google Sheet using Tabletop.js
+ * Fetches SVO data from a Google Sheet using the new Quiz_Data structure
+ * @param sheetId The ID of the Google Sheet
+ * @returns Promise that resolves to the QuizDataSVO object
+ */
+/**
+ * Modern CSV-based approach for fetching Google Sheets data
+ */
+async function fetchSheetAsCSV(sheetId: string, sheetName: string): Promise<any[]> {
+  const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${sheetName}`;
+  console.log(`Fetching CSV from: ${csvUrl}`);
+  
+  const response = await fetch(csvUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${sheetName}: ${response.status} ${response.statusText}`);
+  }
+  
+  const csvText = await response.text();
+  return parseCSV(csvText);
+}
+
+function parseCSV(csvText: string): any[] {
+  const lines = csvText.split('\n').filter(line => line.trim());
+  if (lines.length === 0) return [];
+  
+  const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+  const rows = [];
+  
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',').map(v => v.replace(/"/g, '').trim());
+    const row: any = {};
+    headers.forEach((header, index) => {
+      row[header] = values[index] || '';
+    });
+    rows.push(row);
+  }
+  
+  return rows;
+}
+
+export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDataSVO> {
+  if (!sheetId || !isValidSheetId(sheetId)) {
+    throw new Error('Valid Google Sheet ID required. Format: 1ayBgqVYpBirba1Scg8zgYlrmk4K61HrxgvrsYJO7G7Y');
+  }
+
+  try {
+    console.log('Fetching SVO data using modern CSV approach');
+    
+    // Fetch all sheets as CSV
+    const [quizDataRows, candidates, topics] = await Promise.all([
+      fetchSheetAsCSV(sheetId, 'Quiz_Data'),
+      fetchSheetAsCSV(sheetId, 'Candidates'), 
+      fetchSheetAsCSV(sheetId, 'Topics').catch(() => []) // Topics is optional
+    ]);
+    
+    console.log('Quiz_Data rows:', quizDataRows.length);
+    console.log('Candidates found:', candidates.length);
+    console.log('Topics found:', topics.length);
+
+    // Parse questions from Quiz_Data
+    const questions: QuestionSVO[] = [];
+    const candidateAnswers: CandidateAnswerSVO[] = [];
+    
+    quizDataRows.forEach((row, index) => {
+      console.log(`Processing row ${index + 1}:`, row);
+      
+      // Create question
+      const question: QuestionSVO = {
+        id: `q${index + 1}`,
+        text: row.Question || '',
+        topic: row.Topic || '',
+        explanation: row.Explanation || '',
+        type: row.Type || 'agree_5',
+        priority: row.Priority || 'Essential',
+        active: row.Active === 'TRUE' || row.Active === true,
+        options: [
+          row.Option1,
+          row.Option2, 
+          row.Option3,
+          row.Option4,
+          row.Option5
+        ].filter(opt => opt && opt.trim() !== '')
+      };
+      
+      console.log('Created question:', question);
+      questions.push(question);
+
+      // Extract candidate answers from the same row
+      candidates.forEach(candidate => {
+        const candidateColumnName = candidate.name.split(' ')[0]; // e.g., "Ronald", "Pria"
+        const answerValue = row[candidateColumnName];
+        
+        console.log(`Looking for column '${candidateColumnName}' for candidate ${candidate.id}:`, answerValue);
+        
+        if (answerValue !== undefined && answerValue !== '') {
+          candidateAnswers.push({
+            candidateId: candidate.id,
+            questionId: question.id,
+            value: answerValue
+          });
+        }
+      });
+    });
+    
+    console.log('Final questions:', questions.length);
+    console.log('Final candidate answers:', candidateAnswers.length);
+
+    return {
+      candidates,
+      questions,
+      candidateAnswers,
+      topics,
+      topicImportance: []
+    };
+  } catch (error) {
+    throw new Error(`Error processing SVO sheet data: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Fetches data from a Google Sheet using Tabletop.js (traditional structure)
  * @param sheetId The ID of the Google Sheet
  * @returns Promise that resolves to the QuizData object
  */

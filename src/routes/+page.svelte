@@ -1,19 +1,23 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { QuizData, Question, Candidate, UserTopicWeight } from '$lib/sheets';
-  import { fetchSheetData } from '$lib/sheets';
-  import { calculateMatches, calculateWeightedMatches, type UserAnswer } from '$lib/scorer';
+  import type { QuizData, QuizDataSVO, Question, QuestionSVO, Candidate, UserTopicWeight } from '$lib/sheets';
+  import { fetchSheetData, fetchSheetDataSVO } from '$lib/sheets';
+  import { calculateMatches, calculateWeightedMatches, calculateSVOMatches, calculateWeightedSVOMatches, type UserAnswer, type UserAnswerSVO } from '$lib/scorer';
   import { getSampleData } from '$lib/sampleData';
+  import { getSampleDataSVO } from '$lib/sampleDataSVO';
   import TopicImportanceRanker from '$lib/components/TopicImportanceRanker.svelte';
   import EnhancedResults from '$lib/components/EnhancedResults.svelte';
+  import QuestionRenderer from '$lib/components/questions/QuestionRenderer.svelte';
 
   // Configuration variables - now determined by URL parameters
   let sheetId: string | null = null;
   let useSampleData = false;
+  let useSVOMode = false;
   
-  let quizData: QuizData | null = null;
+  // Support both old and new data structures
+  let quizData: QuizData | QuizDataSVO | null = null;
   let currentQuestionIndex = -1; // -1 for welcome screen, questions.length for topic ranking, questions.length + 1 for results
-  let userAnswers: UserAnswer[] = [];
+  let userAnswers: UserAnswer[] | UserAnswerSVO[] = [];
   let userTopicWeights: UserTopicWeight[] = [];
   let candidateMatches: Array<Candidate & { 
     matchPercentage: number,
@@ -30,21 +34,31 @@
       const urlParams = new URLSearchParams(window.location.search);
       sheetId = urlParams.get('sheet');
       useSampleData = urlParams.get('demo') === 'true' || !sheetId;
+      useSVOMode = urlParams.get('svo') === 'true';
       
       if (useSampleData) {
         // Use sample data for development or when no sheet ID provided
-        quizData = await getSampleData();
+        if (useSVOMode) {
+          quizData = await getSampleDataSVO();
+        } else {
+          quizData = await getSampleData();
+        }
         loading = false;
         return;
       }
       
       if (!sheetId) {
-        error = 'No Google Sheet ID provided. Add ?sheet=YOUR_SHEET_ID to the URL or ?demo=true for sample data.';
+        error = 'No Google Sheet ID provided. Add ?sheet=YOUR_SHEET_ID to the URL, ?demo=true for sample data, or ?svo=true&demo=true for SVO demo.';
         loading = false;
         return;
       }
       
-      quizData = await fetchSheetData(sheetId);
+      // Use appropriate parsing function based on mode
+      if (useSVOMode) {
+        quizData = await fetchSheetDataSVO(sheetId);
+      } else {
+        quizData = await fetchSheetData(sheetId);
+      }
       loading = false;
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -54,10 +68,17 @@
   });
 
   function startQuiz() {
-    currentQuestionIndex = 0;
+    // In SVO mode, skip to first active question
+    if (useSVOMode) {
+      const svoData = quizData as QuizDataSVO;
+      const firstActiveIndex = svoData?.questions.findIndex(q => q.active) ?? 0;
+      currentQuestionIndex = firstActiveIndex >= 0 ? firstActiveIndex : 0;
+    } else {
+      currentQuestionIndex = 0;
+    }
   }
 
-  function answerQuestion(questionId: string, value: number) {
+  function answerQuestion(questionId: string, value: number | string) {
     // Save user's answer
     const existingAnswerIndex = userAnswers.findIndex(a => a.questionId === questionId);
     
@@ -68,11 +89,30 @@
     }
     
     // Move to next question
-    if (currentQuestionIndex < (quizData?.questions.length || 0) - 1) {
-      currentQuestionIndex++;
+    if (useSVOMode) {
+      // In SVO mode, only navigate through active questions
+      const svoData = quizData as QuizDataSVO;
+      const currentActiveIndex = svoData?.questions.filter(q => q.active).findIndex(q => q.id === questionId) ?? -1;
+      const totalActiveQuestions = svoData?.questions.filter(q => q.active).length ?? 0;
+      
+      if (currentActiveIndex < totalActiveQuestions - 1) {
+        // Find next active question
+        const allQuestions = svoData?.questions ?? [];
+        const nextActiveQuestion = allQuestions.filter(q => q.active)[currentActiveIndex + 1];
+        const nextIndex = allQuestions.findIndex(q => q.id === nextActiveQuestion?.id);
+        currentQuestionIndex = nextIndex >= 0 ? nextIndex : currentQuestionIndex + 1;
+      } else {
+        // Go to topic importance ranking screen
+        currentQuestionIndex = (quizData?.questions.length || 0);
+      }
     } else {
-      // Go to topic importance ranking screen
-      currentQuestionIndex = quizData?.questions.length || 0;
+      // Regular mode: navigate through all questions
+      if (currentQuestionIndex < (quizData?.questions.length || 0) - 1) {
+        currentQuestionIndex++;
+      } else {
+        // Go to topic importance ranking screen
+        currentQuestionIndex = quizData?.questions.length || 0;
+      }
     }
   }
 
@@ -104,25 +144,52 @@
   }
 
   function calculateAndShowResults() {
-    // Calculate matches with topic importance weighting if topics are available
+    // Calculate matches with appropriate scoring function based on mode
     if (quizData) {
-      if (quizData.topics && quizData.topics.length > 0 && userTopicWeights.length > 0) {
-        candidateMatches = calculateWeightedMatches(
-          userAnswers,
-          userTopicWeights,
-          quizData.candidateAnswers,
-          quizData.candidates,
-          quizData.questions,
-          quizData.topics
-        );
+      if (useSVOMode) {
+        // Use SVO scoring functions
+        const svoQuizData = quizData as QuizDataSVO;
+        const svoUserAnswers = userAnswers as UserAnswerSVO[];
+        
+        if (svoQuizData.topics && svoQuizData.topics.length > 0 && userTopicWeights.length > 0) {
+          candidateMatches = calculateWeightedSVOMatches(
+            svoUserAnswers,
+            userTopicWeights,
+            svoQuizData.candidateAnswers,
+            svoQuizData.candidates,
+            svoQuizData.questions,
+            svoQuizData.topics
+          );
+        } else {
+          candidateMatches = calculateSVOMatches(
+            svoUserAnswers,
+            svoQuizData.candidateAnswers,
+            svoQuizData.candidates,
+            svoQuizData.questions
+          );
+        }
       } else {
-        // Fallback to basic matching if topics not available or weighted
-        candidateMatches = calculateMatches(
-          userAnswers,
-          quizData.candidateAnswers,
-          quizData.candidates,
-          quizData.questions
-        );
+        // Use original scoring functions
+        const regularQuizData = quizData as QuizData;
+        const regularUserAnswers = userAnswers as UserAnswer[];
+        
+        if (regularQuizData.topics && regularQuizData.topics.length > 0 && userTopicWeights.length > 0) {
+          candidateMatches = calculateWeightedMatches(
+            regularUserAnswers,
+            userTopicWeights,
+            regularQuizData.candidateAnswers,
+            regularQuizData.candidates,
+            regularQuizData.questions,
+            regularQuizData.topics
+          );
+        } else {
+          candidateMatches = calculateMatches(
+            regularUserAnswers,
+            regularQuizData.candidateAnswers,
+            regularQuizData.candidates,
+            regularQuizData.questions
+          );
+        }
       }
     }
     
@@ -146,6 +213,12 @@
     : null;
   $: showTopicRanking = quizData && currentQuestionIndex === (quizData.questions.length || 0);
   $: showResults = quizData && currentQuestionIndex === (quizData.questions.length + 1);
+  
+  // Type-safe access to SVO questions
+  $: currentSVOQuestion = (useSVOMode && currentQuestion) ? currentQuestion as QuestionSVO : null;
+  $: activeQuestions = useSVOMode 
+    ? (quizData as QuizDataSVO)?.questions.filter(q => q.active) || []
+    : quizData?.questions || [];
   
   // Initialize topic weights when topics first become available
   $: if (quizData?.topics && quizData.topics.length > 0 && userTopicWeights.length === 0) {
@@ -189,21 +262,52 @@
   {:else if currentQuestionIndex === -1}
     <!-- Welcome Screen -->
     <div class="text-center">
-      <h1 class="text-3xl font-bold mb-6">Candidate Matcher Quiz</h1>
-      <p class="mb-8 text-lg">
-        Find out which candidates align with your views on key issues.
-        Answer a few questions to see your personalized matches.
-      </p>
+      <h1 class="text-3xl font-bold mb-6">
+        Candidate Matcher Quiz
+        {#if useSVOMode}
+          <span class="block text-lg font-normal text-blue-600 mt-2">
+            🧠 SVO Framework (Beta)
+          </span>
+        {/if}
+      </h1>
+      
+      {#if useSVOMode}
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+          <p class="text-blue-800 font-medium mb-2">
+            🚀 You're experiencing our advanced Social Value Orientation quiz!
+          </p>
+          <p class="text-blue-700 text-sm">
+            Based on 40+ years of psychological research, this version asks deeper questions about your fundamental values rather than surface-level policy positions.
+          </p>
+        </div>
+        <p class="mb-8 text-lg">
+          Discover which candidates share your core social orientations through scientifically-designed scenarios.
+        </p>
+      {:else}
+        <p class="mb-8 text-lg">
+          Find out which candidates align with your views on key issues.
+          Answer a few questions to see your personalized matches.
+        </p>
+      {/if}
+      
       <button 
         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg"
         on:click={startQuiz}
       >
-        Start Quiz
+        Start {useSVOMode ? 'SVO ' : ''}Quiz
       </button>
       
       {#if useSampleData && devMode}
         <div class="mt-8 p-3 bg-yellow-100 text-yellow-800 rounded text-sm">
-          Using sample data for development. Add <code>?sheet=YOUR_SHEET_ID</code> to the URL to use real Google Sheet data.
+          <p class="font-medium mb-2">Developer Mode Active</p>
+          <p class="mb-2">
+            Current: {useSVOMode ? 'SVO Framework Demo' : 'Traditional Quiz Demo'}
+          </p>
+          <div class="text-xs space-y-1">
+            <p>• Add <code>?sheet=YOUR_SHEET_ID</code> for real Google Sheet data</p>
+            <p>• Add <code>?svo=true&demo=true</code> for SVO framework demo</p>
+            <p>• Add <code>?demo=true</code> for traditional quiz demo</p>
+          </div>
         </div>
       {/if}
     </div>
@@ -295,11 +399,20 @@
         <div class="w-full bg-gray-200 rounded-full h-2.5">
           <div 
             class="bg-blue-600 h-2.5 rounded-full" 
-            style="width: {((currentQuestionIndex + 1) / ((quizData?.questions.length || 1) + 2)) * 100}%"
+            style="width: {useSVOMode 
+              ? (((activeQuestions.filter(q => (q as QuestionSVO).active).findIndex(q => q.id === currentQuestion?.id) + 1) / ((activeQuestions.filter(q => (q as QuestionSVO).active).length || 1) + 2)) * 100)
+              : (((currentQuestionIndex + 1) / ((quizData?.questions.length || 1) + 2)) * 100)
+            }%"
           ></div>
         </div>
         <p class="text-right text-sm mt-1">
-          Step 1 of 3: Question {currentQuestionIndex + 1} of {quizData?.questions.length}
+          Step 1 of 3: Question {useSVOMode 
+            ? (activeQuestions.filter(q => (q as QuestionSVO).active).findIndex(q => q.id === currentQuestion?.id) + 1)
+            : (currentQuestionIndex + 1)
+          } of {useSVOMode 
+            ? activeQuestions.filter(q => (q as QuestionSVO).active).length
+            : quizData?.questions.length
+          }
         </p>
       </div>
       
@@ -322,45 +435,55 @@
         <div class="w-16"></div> <!-- Spacer to maintain centering -->
       </div>
       
-      <div class="mb-10 p-6 bg-white rounded-lg shadow-md">
-        <h3 class="text-xl font-bold mb-4">{currentQuestion.text}</h3>
-        {#if currentQuestion.explanation}
-          <p class="text-gray-600 mb-6">{currentQuestion.explanation}</p>
-        {/if}
-        
-        <div class="flex flex-col space-y-3">
-          <button 
-            class={`p-3 rounded-lg border ${currentAnswer === 5 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
-            on:click={() => answerQuestion(currentQuestion.id, 5)}
-          >
-            Strongly Agree
-          </button>
-          <button 
-            class={`p-3 rounded-lg border ${currentAnswer === 4 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
-            on:click={() => answerQuestion(currentQuestion.id, 4)}
-          >
-            Somewhat Agree
-          </button>
-          <button 
-            class={`p-3 rounded-lg border ${currentAnswer === 3 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
-            on:click={() => answerQuestion(currentQuestion.id, 3)}
-          >
-            Neutral
-          </button>
-          <button 
-            class={`p-3 rounded-lg border ${currentAnswer === 2 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
-            on:click={() => answerQuestion(currentQuestion.id, 2)}
-          >
-            Somewhat Disagree
-          </button>
-          <button 
-            class={`p-3 rounded-lg border ${currentAnswer === 1 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
-            on:click={() => answerQuestion(currentQuestion.id, 1)}
-          >
-            Strongly Disagree
-          </button>
+      {#if useSVOMode && currentSVOQuestion}
+        <!-- SVO Mode: Use dynamic question renderer -->
+        <QuestionRenderer 
+          question={currentSVOQuestion}
+          {currentAnswer}
+          onAnswer={answerQuestion}
+        />
+      {:else if currentQuestion}
+        <!-- Regular Mode: Use hardcoded 5-point scale -->
+        <div class="mb-10 p-6 bg-white rounded-lg shadow-md">
+          <h3 class="text-xl font-bold mb-4">{currentQuestion.text}</h3>
+          {#if currentQuestion.explanation}
+            <p class="text-gray-600 mb-6">{currentQuestion.explanation}</p>
+          {/if}
+          
+          <div class="flex flex-col space-y-3">
+            <button 
+              class={`p-3 rounded-lg border ${currentAnswer === 5 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
+              on:click={() => answerQuestion(currentQuestion.id, 5)}
+            >
+              Strongly Agree
+            </button>
+            <button 
+              class={`p-3 rounded-lg border ${currentAnswer === 4 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
+              on:click={() => answerQuestion(currentQuestion.id, 4)}
+            >
+              Somewhat Agree
+            </button>
+            <button 
+              class={`p-3 rounded-lg border ${currentAnswer === 3 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
+              on:click={() => answerQuestion(currentQuestion.id, 3)}
+            >
+              Neutral
+            </button>
+            <button 
+              class={`p-3 rounded-lg border ${currentAnswer === 2 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
+              on:click={() => answerQuestion(currentQuestion.id, 2)}
+            >
+              Somewhat Disagree
+            </button>
+            <button 
+              class={`p-3 rounded-lg border ${currentAnswer === 1 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
+              on:click={() => answerQuestion(currentQuestion.id, 1)}
+            >
+              Strongly Disagree
+            </button>
+          </div>
         </div>
-      </div>
+      {/if}
     </div>
   {/if}
 </main>
