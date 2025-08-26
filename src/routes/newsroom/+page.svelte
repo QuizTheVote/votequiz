@@ -195,16 +195,17 @@
           
           <p><strong>Publish to web:</strong></p>
           <ol class="list-decimal list-inside space-y-1 ml-4">
-            <li>In Google Sheets: File → Share → Publish to web</li>
-            <li>Select "Entire Document" and click "Publish"</li>
+            <li><strong>FIRST:</strong> Click "Share" → "Anyone with the link" → "Viewer" → "Done"</li>
+            <li>File → Share → Publish to web → "Quiz_Data" sheet → "CSV" → Publish</li>
             <li><strong>Copy the URL from your browser's address bar</strong> (not from the publish dialog)</li>
           </ol>
           
-          <div class="mt-3 p-3 bg-yellow-50 border-l-4 border-yellow-400">
-            <p class="text-sm text-yellow-800">
-              💡 <strong>Important:</strong> Use the URL from your browser's address bar that looks like:<br>
-              <code class="text-xs bg-gray-100 px-1 rounded">https://docs.google.com/spreadsheets/d/YOUR_ID/edit</code><br>
-              <strong>NOT</strong> the published URL from the dialog box.
+          <div class="mt-3 p-3 bg-red-50 border-l-4 border-red-400">
+            <p class="text-sm text-red-800">
+              🚨 <strong>CRITICAL:</strong> You MUST make the sheet publicly viewable first!<br>
+              <strong>Step 1:</strong> Share → Anyone with the link → Viewer<br>
+              <strong>Step 2:</strong> Publish Quiz_Data sheet as CSV<br>
+              <strong>Step 3:</strong> Use browser URL from address bar
             </p>
           </div>
         </div>
