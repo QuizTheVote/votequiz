@@ -9,15 +9,28 @@
   
   // Extract sheet ID from various Google Sheets URL formats
   function extractSheetId(url: string): string | null {
+    // Remove any whitespace
+    url = url.trim();
+    
     const patterns = [
-      /\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/,
-      /spreadsheets\/d\/([a-zA-Z0-9-_]+)/,
-      /docs\.google\.com.*[?&]id=([a-zA-Z0-9-_]+)/
+      // Standard: /spreadsheets/d/ID/anything
+      /\/spreadsheets\/d\/([^\/\?\#]+)/,
+      
+      // Published: /spreadsheets/d/e/LONGER_ID/anything  
+      /\/spreadsheets\/d\/e\/([^\/\?\#]+)/,
+      
+      // Legacy: ?key=ID or &key=ID
+      /[?&]key=([^&\#]+)/,
+      
+      // Generic docs.google.com with id parameter
+      /[?&]id=([^&\#]+)/
     ];
     
     for (const pattern of patterns) {
       const match = url.match(pattern);
-      if (match) return match[1];
+      if (match && match[1]) {
+        return match[1];
+      }
     }
     return null;
   }
@@ -28,7 +41,13 @@
     
     const sheetId = extractSheetId(sheetUrl);
     if (!sheetId) {
-      alert('Please enter a valid Google Sheets URL');
+      alert('❌ Invalid Google Sheets URL\n\nPlease make sure you\'re using a URL that looks like:\n• https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit\n• https://docs.google.com/spreadsheet/ccc?key=YOUR_SHEET_ID');
+      return;
+    }
+    
+    // Validate sheet ID length (Google sheet IDs are typically 44+ characters)
+    if (sheetId.length < 20) {
+      alert('⚠️ Sheet ID seems too short\n\nExtracted ID: ' + sheetId + '\n\nPlease double-check your Google Sheets URL. Make sure it\'s the full URL from your browser address bar.');
       return;
     }
     
@@ -41,6 +60,11 @@
     
     showPreview = true;
     step = 3;
+    
+    // Log for debugging (remove in production)
+    console.log('Sheet URL:', sheetUrl);
+    console.log('Extracted Sheet ID:', sheetId);
+    console.log('Generated Quiz URL:', previewUrl);
   }
   
   function copyToClipboard(text: string) {
