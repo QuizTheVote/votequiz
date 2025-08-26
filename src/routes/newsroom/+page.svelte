@@ -197,8 +197,16 @@
           <ol class="list-decimal list-inside space-y-1 ml-4">
             <li>In Google Sheets: File → Share → Publish to web</li>
             <li>Select "Entire Document" and click "Publish"</li>
-            <li>Copy the sheet URL from your browser</li>
+            <li><strong>Copy the URL from your browser's address bar</strong> (not from the publish dialog)</li>
           </ol>
+          
+          <div class="mt-3 p-3 bg-yellow-50 border-l-4 border-yellow-400">
+            <p class="text-sm text-yellow-800">
+              💡 <strong>Important:</strong> Use the URL from your browser's address bar that looks like:<br>
+              <code class="text-xs bg-gray-100 px-1 rounded">https://docs.google.com/spreadsheets/d/YOUR_ID/edit</code><br>
+              <strong>NOT</strong> the published URL from the dialog box.
+            </p>
+          </div>
         </div>
       </div>
 
