@@ -13,11 +13,11 @@
     url = url.trim();
     
     const patterns = [
+      // Published: /spreadsheets/d/e/LONGER_ID/anything  
+      /\/spreadsheets\/d\/e\/([a-zA-Z0-9_-]+)/,
+      
       // Standard: /spreadsheets/d/ID/anything
       /\/spreadsheets\/d\/([^\/\?\#]+)/,
-      
-      // Published: /spreadsheets/d/e/LONGER_ID/anything  
-      /\/spreadsheets\/d\/e\/([^\/\?\#]+)/,
       
       // Legacy: ?key=ID or &key=ID
       /[?&]key=([^&\#]+)/,
