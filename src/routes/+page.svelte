@@ -262,39 +262,18 @@
   {:else if currentQuestionIndex === -1}
     <!-- Welcome Screen -->
     <div class="text-center">
-      <h1 class="text-3xl font-bold mb-6">
-        Quiz The Vote
-        {#if useSVOMode}
-          <span class="block text-lg font-normal text-blue-600 mt-2">
-            🧠 SVO Framework (Beta)
-          </span>
-        {/if}
-      </h1>
+      <h1 class="text-3xl font-bold mb-6">Quiz The Vote</h1>
       
-      {#if useSVOMode}
-        <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-          <p class="text-blue-800 font-medium mb-2">
-            🚀 You're experiencing our advanced Social Value Orientation quiz!
-          </p>
-          <p class="text-blue-700 text-sm">
-            Based on 40+ years of psychological research, this version asks deeper questions about your fundamental values rather than surface-level policy positions.
-          </p>
-        </div>
-        <p class="mb-8 text-lg">
-          Discover which candidates share your core social orientations through scientifically-designed scenarios.
-        </p>
-      {:else}
-        <p class="mb-8 text-lg">
-          Find out which candidates align with your views on key issues.
-          Answer a few questions to see your personalized matches.
-        </p>
-      {/if}
+      <p class="mb-8 text-lg text-gray-700">
+        Discover which candidates align with your values and priorities.
+        Answer a few questions to see your personalized matches.
+      </p>
       
       <button 
         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg"
         on:click={startQuiz}
       >
-        Start {useSVOMode ? 'SVO ' : ''}Quiz
+        Start Quiz
       </button>
       
       {#if useSampleData && devMode}

@@ -175,7 +175,7 @@
       </div>
 
       <!-- Step 2: Customize & Publish -->
-      <div class="bg-white rounded-xl shadow-lg p-8" class:opacity-50={step < 2}>
+      <div class="bg-white rounded-xl shadow-lg p-8" >
         <div class="flex items-center mb-6">
           <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">2</div>
           <h2 class="text-2xl font-bold">Customize & Publish Your Sheet</h2>
@@ -214,7 +214,7 @@
       </div>
 
       <!-- Step 3: Generate Embed Code -->
-      <div class="bg-white rounded-xl shadow-lg p-8" class:opacity-50={step < 2}>
+      <div class="bg-white rounded-xl shadow-lg p-8" >
         <div class="flex items-center mb-6">
           <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">3</div>
           <h2 class="text-2xl font-bold">Get Your Quiz Link & Embed Code</h2>
@@ -334,9 +334,3 @@
     </div>
   </main>
 </div>
-
-<style>
-  .opacity-50 {
-    opacity: 0.5;
-  }
-</style>
