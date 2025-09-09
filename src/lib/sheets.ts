@@ -223,6 +223,7 @@ export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDat
         const answerValue = row[candidateColumnName];
         
         console.log(`Looking for column '${candidateColumnName}' for candidate ${candidate.id}:`, answerValue);
+        console.log(`Available columns:`, Object.keys(row));
         
         if (answerValue !== undefined && answerValue !== '') {
           candidateAnswers.push({
