@@ -218,7 +218,8 @@ export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDat
 
       // Extract candidate answers from the same row
       candidates.forEach(candidate => {
-        const candidateColumnName = candidate.name.split(' ')[0]; // e.g., "Ronald", "Pria"
+        // Use full candidate name to match column headers
+        const candidateColumnName = candidate.name.trim();
         const answerValue = row[candidateColumnName];
         
         console.log(`Looking for column '${candidateColumnName}' for candidate ${candidate.id}:`, answerValue);
@@ -229,6 +230,8 @@ export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDat
             questionId: question.id,
             value: answerValue
           });
+        } else {
+          console.warn(`⚠️ No answer found for candidate ${candidate.name} in question ${question.id}`);
         }
       });
     });

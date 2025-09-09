@@ -13,23 +13,27 @@
   // For multiple choice questions, we use the options array from the question
   $: choiceOptions = question.options || [];
 
+  // Track selections locally without submitting
+  let localSelectedOptions: string[] = selectedOptions;
+
   function toggleOption(option: string) {
-    let newSelection;
-    if (selectedOptions.includes(option)) {
+    if (localSelectedOptions.includes(option)) {
       // Remove option
-      newSelection = selectedOptions.filter(o => o !== option);
+      localSelectedOptions = localSelectedOptions.filter(o => o !== option);
     } else {
       // Add option
-      newSelection = [...selectedOptions, option];
+      localSelectedOptions = [...localSelectedOptions, option];
     }
-    
-    // Convert back to comma-separated string
-    const answerValue = newSelection.length > 0 ? newSelection.join(',') : '';
+  }
+
+  function submitAnswer() {
+    // Convert to comma-separated string and submit
+    const answerValue = localSelectedOptions.length > 0 ? localSelectedOptions.join(',') : '';
     onAnswer(question.id, answerValue);
   }
 
   function isOptionSelected(option: string): boolean {
-    return selectedOptions.includes(option);
+    return localSelectedOptions.includes(option);
   }
 </script>
 
@@ -62,11 +66,26 @@
     {/each}
   </div>
 
-  {#if selectedOptions.length > 0}
+  {#if localSelectedOptions.length > 0}
     <div class="mt-4 p-3 bg-blue-50 rounded-lg">
       <p class="text-sm text-blue-700">
-        Selected: {selectedOptions.join(', ')}
+        Selected: {localSelectedOptions.join(', ')}
       </p>
     </div>
   {/if}
+
+  <!-- Submit Button -->
+  <div class="mt-6 flex justify-end">
+    <button 
+      class={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+        localSelectedOptions.length > 0 
+          ? 'bg-blue-600 text-white hover:bg-blue-700' 
+          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+      }`}
+      on:click={submitAnswer}
+      disabled={localSelectedOptions.length === 0}
+    >
+      Continue
+    </button>
+  </div>
 </div> 
