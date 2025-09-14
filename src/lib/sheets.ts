@@ -225,6 +225,12 @@ export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDat
         console.log(`Looking for column '${candidateColumnName}' for candidate ${candidate.id}:`, answerValue);
         console.log(`Available columns:`, Object.keys(row));
         
+        // Show first row only to avoid spam
+        if (index === 0) {
+          console.log(`🔍 DEBUGGING: All column headers in Quiz_Data:`, Object.keys(row));
+          console.log(`🔍 DEBUGGING: Looking for candidate names:`, candidates.map(c => c.name));
+        }
+        
         if (answerValue !== undefined && answerValue !== '') {
           candidateAnswers.push({
             candidateId: candidate.id,
