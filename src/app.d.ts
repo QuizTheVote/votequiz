@@ -9,8 +9,6 @@ declare global {
 	}
 }
 
-// Add module declaration for tabletop
-declare module 'tabletop';
 
 // Add constants that can be used throughout the app
 declare const EXAMPLE_SHEET_ID = '1EXAMPLE_REPLACE_WITH_REAL_SHEET_ID';
