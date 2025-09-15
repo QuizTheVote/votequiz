@@ -2,21 +2,21 @@
 
 **Help voters connect with candidates based on policy, not party.**
 
-Quiz The Vote is a powerful tool for newsrooms to create engaging candidate matching quizzes that help voters discover candidates based on actual policy positions and local issues.
+Quiz The Vote is a tool for newsrooms to create engaging candidate matching quizzes that help voters discover candidates based on actual policy positions and local issues.
 
 ## For Newsrooms
 
 Create meaningful voter-candidate connections with our easy-to-use platform:
 
-- **Quick Setup:** Ready in 5 minutes using Google Sheets
+- **Quick Setup:** Ready to customize in minutes using Google Sheets
 - **No Coding Required:** Simple template-based approach  
 - **Fully Customizable:** Add your candidates and local issues
-- **Mobile Responsive:** Works perfectly on all devices
+- **Mobile Responsive:** Works on all devices
 - **Easy Embedding:** Simple iframe embed for your website
 
 ## Features
 
-- **Social Value Orientation Framework:** Based on 40+ years of psychological research
+- **"Social Value Orientation" Framework Default Quiz:** Based in research at the intersection of psychology and sociopolitical choice
 - **Multiple Question Types:** Agreement scales, multiple choice, binary options
 - **Smart Matching Algorithm:** Weighted similarity calculations for accurate results
 - **Topic Importance Ranking:** Users can prioritize issues that matter most
