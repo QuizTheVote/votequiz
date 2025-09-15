@@ -1,51 +1,6 @@
 <script>
   import '../app.css';
   import Navbar from '$lib/components/Navbar.svelte';
-  import { onMount } from 'svelte';
-  
-  // Auto-resize functionality for iframe embedding
-  onMount(() => {
-    function sendResizeMessage() {
-      if (window.parent !== window) {
-        // We're in an iframe, send height to parent
-        const height = document.documentElement.scrollHeight;
-        window.parent.postMessage({
-          type: 'resize',
-          height: height
-        }, '*');
-      }
-    }
-    
-    // Send initial resize
-    sendResizeMessage();
-    
-    // Listen for resize requests from parent
-    window.addEventListener('message', function(event) {
-      if (event.data.type === 'requestResize') {
-        sendResizeMessage();
-      }
-    });
-    
-    // Send resize when content changes
-    const observer = new MutationObserver(sendResizeMessage);
-    observer.observe(document.body, { 
-      childList: true, 
-      subtree: true, 
-      attributes: true 
-    });
-    
-    // Send resize on window resize
-    window.addEventListener('resize', sendResizeMessage);
-    
-    // Send resize periodically for dynamic content
-    const interval = setInterval(sendResizeMessage, 1000);
-    
-    // Cleanup
-    return () => {
-      observer.disconnect();
-      clearInterval(interval);
-    };
-  });
 </script>
 
 <Navbar />
@@ -61,7 +16,7 @@
     </p>
     <p class="text-xs">
       Help voters connect with candidates based on policy, not party | 
-      <a href="https://www.quizthevote.com/get-started" target="_blank" class="text-blue-600 hover:text-blue-800">Create Your Quiz</a>
+      <a href="https://www.quizthevote.com/build-your-quiz/" target="_blank" class="text-blue-600 hover:text-blue-800">Create Your Quiz</a>
     </p>
   </div>
 </footer>
