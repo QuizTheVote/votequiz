@@ -5,11 +5,11 @@
 
 <Navbar />
 
-<div class="min-h-screen">
+<div>
   <slot />
 </div>
 
-<footer class="bg-white border-t py-8 mt-12">
+<footer class="bg-white border-t py-4 mt-6">
   <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
     <p class="mb-2">
       Powered by <a href="https://www.quizthevote.com" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium">QuizTheVote</a>
