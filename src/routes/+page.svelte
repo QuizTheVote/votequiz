@@ -370,6 +370,13 @@
         candidates={candidateMatches} 
         bind:expandedCandidateId
       />
+      
+      <!-- Attribution -->
+      <div class="text-center mt-8 pt-6 border-t border-gray-200">
+        <p class="text-sm text-gray-600">
+          Powered by <a href="https://www.quizthevote.com" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium">QuizTheVote</a>
+        </p>
+      </div>
     </div>
   {:else if currentQuestion}
     <!-- Question Screen -->
