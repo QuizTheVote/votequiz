@@ -6,6 +6,14 @@
   let previewUrl = '';
   let showPreview = false;
   let step = 1; // Track which step user is on
+  let iframeHeight = 750; // Default height
+  
+  // Update embed code when height changes
+  function updateEmbedCode() {
+    if (previewUrl) {
+      embedCode = `<iframe src="${previewUrl}" width="100%" height="${iframeHeight}" frameborder="0" scrolling="no" style="border: none; border-radius: 8px;"></iframe>`;
+    }
+  }
   
   // Extract sheet ID from various Google Sheets URL formats
   function extractSheetId(url: string): string | null {
@@ -55,8 +63,8 @@
     const baseUrl = window.location.origin + window.location.pathname.replace('/newsroom', '');
     previewUrl = `${baseUrl}?sheet=${sheetId}&svo=true`;
     
-    // Generate iframe embed code
-    embedCode = `<iframe src="${previewUrl}" width="100%" height="600" frameborder="0" style="border: none; border-radius: 8px;"></iframe>`;
+    // Generate iframe embed code with customizable height
+    updateEmbedCode();
     
     showPreview = true;
     step = 3;
@@ -301,6 +309,25 @@
             </div>
           </div>
           
+          <!-- Height Customization -->
+          <div class="mb-6">
+            <h3 class="font-semibold mb-2">Customize Height:</h3>
+            <div class="flex items-center space-x-4 mb-4">
+              <label class="text-sm font-medium">Height:</label>
+              <input 
+                type="range" 
+                min="600" 
+                max="1000" 
+                step="50" 
+                bind:value={iframeHeight}
+                on:input={updateEmbedCode}
+                class="flex-1"
+              />
+              <span class="text-sm font-mono bg-gray-100 px-2 py-1 rounded">{iframeHeight}px</span>
+            </div>
+            <p class="text-xs text-gray-600">Adjust if your quiz content appears cut off. Most quizzes work well at 750px.</p>
+          </div>
+
           <!-- Live Preview -->
           <div>
             <h3 class="font-semibold mb-2">Live Preview:</h3>
@@ -308,10 +335,12 @@
               <iframe 
                 src={previewUrl} 
                 width="100%" 
-                height="600" 
+                height={iframeHeight}
                 frameborder="0"
+                scrolling="no"
                 title="Quiz Preview"
                 class="w-full"
+                style="border: none;"
               ></iframe>
             </div>
           </div>
