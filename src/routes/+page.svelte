@@ -231,7 +231,7 @@
 
 <main class="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-3xl">
   {#if loading}
-    <div class="flex flex-col items-center justify-center min-h-screen">
+    <div class="flex flex-col items-center justify-center py-20">
       <div class="text-center">
         <h1 class="text-2xl font-bold mb-4">Loading Quiz...</h1>
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
