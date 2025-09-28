@@ -31,6 +31,15 @@
 </script>
 
 <div class="mb-10 p-6 bg-white rounded-lg shadow-md">
+  <!-- Question Type Instructions -->
+  <p class="text-sm text-gray-500 mb-2 italic">
+    {#if question.type === 'agree_5'}
+      Rate your agreement with this statement:
+    {:else if question.type === 'support_3'}
+      Select your level of support:
+    {/if}
+  </p>
+  
   <h3 class="text-xl font-bold mb-4">{question.text}</h3>
   {#if question.explanation}
     <p class="text-gray-600 mb-6">{question.explanation}</p>

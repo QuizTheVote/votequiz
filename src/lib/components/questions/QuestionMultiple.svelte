@@ -38,12 +38,15 @@
 </script>
 
 <div class="mb-10 p-6 bg-white rounded-lg shadow-md">
+  <!-- Question Type Instructions -->
+  <p class="text-sm text-gray-500 mb-2 italic">
+    Select all that apply, then click Continue:
+  </p>
+  
   <h3 class="text-xl font-bold mb-4">{question.text}</h3>
   {#if question.explanation}
     <p class="text-gray-600 mb-6">{question.explanation}</p>
   {/if}
-  
-  <p class="text-sm text-gray-500 mb-4 italic">Select all that apply</p>
   
   <div class="flex flex-col space-y-3">
     {#each choiceOptions as option, index}
