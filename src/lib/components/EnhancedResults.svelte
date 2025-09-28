@@ -1,11 +1,13 @@
 <script lang="ts">
-  import type { Candidate } from '$lib/sheets';
+  import type { Candidate, QuizData, QuizDataSVO, UserAnswer, UserAnswerSVO } from '$lib/sheets';
   
   export let candidates: Array<Candidate & { 
     matchPercentage: number, 
     topicMatches?: { topicId: string, topicName: string, matchPercentage: number }[] 
   }>;
   export let expandedCandidateId: string | null = null;
+  export let quizData: QuizData | QuizDataSVO | null = null;
+  export let userAnswers: UserAnswer[] | UserAnswerSVO[] = [];
   
   // State for showing detailed answers
   let showingAnswers: { [key: string]: boolean } = {};
@@ -16,24 +18,25 @@
     showingAnswers[key] = !showingAnswers[key];
   }
   
-  // Placeholder functions - would need actual quiz data to implement
+  // Get real questions for a specific topic
   function getTopicQuestions(topicId: string) {
-    // This would need access to the quiz questions data
-    // For now, return placeholder
-    return [
-      { id: 'q1', text: 'Sample question for ' + topicId },
-      { id: 'q2', text: 'Another sample question for ' + topicId }
-    ];
+    if (!quizData) return [];
+    return quizData.questions.filter(q => q.topic === topicId);
   }
   
+  // Get user's actual answer for a question
   function getUserAnswer(questionId: string) {
-    // This would need access to user's answers
-    return 'Your answer here';
+    const userAnswer = userAnswers.find(a => a.questionId === questionId);
+    return userAnswer ? userAnswer.value : 'No answer';
   }
   
+  // Get candidate's actual answer for a question
   function getCandidateAnswer(candidateId: string, questionId: string) {
-    // This would need access to candidate answers
-    return 'Candidate answer here';
+    if (!quizData) return 'No data';
+    const candidateAnswer = quizData.candidateAnswers.find(a => 
+      a.candidateId === candidateId && a.questionId === questionId
+    );
+    return candidateAnswer ? candidateAnswer.value : 'No answer';
   }
   
   function toggleCandidateDetails(candidateId: string) {
@@ -102,8 +105,8 @@
             {/if}
           </div>
           <div>
-            <h3 class="text-xl font-semibold">{candidate.name}</h3>
-            <p class="text-gray-600">{candidate.party}</p>
+            <h3 class="text-base sm:text-xl font-semibold">{candidate.name}</h3>
+            <p class="text-xs sm:text-sm text-gray-600">{candidate.party}</p>
           </div>
         </div>
         <div class="flex flex-col items-end">
@@ -114,11 +117,14 @@
                 style={`width: ${candidate.matchPercentage}%`}
               ></div>
             </div>
-            <span class="ml-2 text-2xl font-bold">{candidate.matchPercentage}%</span>
+            <span class="ml-2 text-base sm:text-xl font-bold">{candidate.matchPercentage}%</span>
           </div>
-          <div class="mt-1">
+          <div class="mt-1 flex items-center">
+            <span class="text-xs sm:text-sm text-gray-500 mr-2">
+              {expandedCandidateId === candidate.id ? 'Hide Details' : 'Show Details'}
+            </span>
             <svg 
-              class={`w-6 h-6 transition-transform ${expandedCandidateId === candidate.id ? 'transform rotate-180' : ''}`}
+              class={`w-5 h-5 transition-transform ${expandedCandidateId === candidate.id ? 'transform rotate-180' : ''}`}
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -163,21 +169,23 @@
                     
                     <!-- Topic Answer Details -->
                     {#if showingAnswers[`${candidate.id}-${topicMatch.topicId}`]}
-                      <div class="ml-4 p-3 bg-blue-50 rounded-lg text-sm">
+                      <div class="ml-4 p-3 bg-blue-50 rounded-lg text-xs sm:text-sm">
                         <p class="font-medium text-blue-800 mb-2">Questions & Answers:</p>
                         {#each getTopicQuestions(topicMatch.topicId) as question}
                           <div class="mb-2 pb-2 border-b border-blue-200 last:border-b-0">
-                            <p class="font-medium text-gray-700">{question.text}</p>
-                            <div class="mt-1 flex items-center gap-4">
-                              <span class="text-gray-600">Your answer: <strong>{getUserAnswer(question.id)}</strong></span>
-                              <span class="text-blue-700">{candidate.name}: <strong>{getCandidateAnswer(candidate.id, question.id)}</strong></span>
-                              <span class="text-xs">
-                                {#if getUserAnswer(question.id) === getCandidateAnswer(candidate.id, question.id)}
-                                  <span class="text-green-600">✓ Match</span>
-                                {:else}
-                                  <span class="text-red-600">✗ Different</span>
-                                {/if}
-                              </span>
+                            <p class="font-medium text-gray-700 text-xs sm:text-sm">{question.text}</p>
+                            <div class="mt-1 space-y-1">
+                              <div class="text-gray-600 text-xs sm:text-sm">
+                                Your answer: <strong>{getUserAnswer(question.id)}</strong>
+                              </div>
+                              <div class="text-xs sm:text-sm">
+                                {candidate.name}: 
+                                <strong class={getUserAnswer(question.id) === getCandidateAnswer(candidate.id, question.id) 
+                                  ? 'text-green-600' 
+                                  : 'text-red-600'}>
+                                  {getCandidateAnswer(candidate.id, question.id)}
+                                </strong>
+                              </div>
                             </div>
                           </div>
                         {/each}

@@ -262,15 +262,13 @@
   {:else if currentQuestionIndex === -1}
     <!-- Welcome Screen -->
     <div class="text-center">
-      <h1 class="text-3xl font-bold mb-6">Quiz The Vote</h1>
-      
-      <p class="mb-8 text-lg text-gray-700">
+      <p class="mb-8 text-base sm:text-lg text-gray-700">
         Discover which candidates align with your values and priorities.
-        Answer a few questions to see your personalized matches.
+        Answer questions to see your personalized matches.
       </p>
       
       <button 
-        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-base sm:text-lg"
         on:click={startQuiz}
       >
         Start Quiz
@@ -305,25 +303,31 @@
         </p>
       </div>
       
-      <div class="mb-6 flex justify-between items-center">
-        <button 
-          class="text-blue-500 hover:text-blue-700"
-          on:click={goBack}
-        >
-          &larr; Back
-        </button>
-        <h2 class="text-2xl font-bold text-center">Topic Importance</h2>
-        <button 
-          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          on:click={calculateAndShowResults}
-        >
-          See Results &rarr;
-        </button>
+      <!-- Mobile-First Header -->
+      <div class="mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <button 
+            class="text-blue-500 hover:text-blue-700 text-sm sm:text-base"
+            on:click={goBack}
+          >
+            &larr; Back
+          </button>
+          <button 
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-3 sm:px-4 rounded text-sm sm:text-base"
+            on:click={calculateAndShowResults}
+          >
+            <span class="hidden sm:inline">See Results &rarr;</span>
+            <span class="sm:hidden">Results &rarr;</span>
+          </button>
+        </div>
+        
+        <div class="text-center">
+          <h2 class="text-lg sm:text-2xl font-bold mb-3">Rank Topics</h2>
+          <p class="text-sm sm:text-base text-gray-600">
+            Which topics matter most to you? Rank them to get more accurate results.
+          </p>
+        </div>
       </div>
-      
-      <p class="mb-6 text-center">
-        Which topics matter most to you? Rank or adjust the importance of each topic to get more accurate results.
-      </p>
       
       <TopicImportanceRanker 
         topics={quizData.topics} 
@@ -346,29 +350,26 @@
         </p>
       </div>
       
-      <div class="mb-6 flex justify-between items-center">
+      <div class="mb-8 flex justify-between items-center">
         <button 
-          class="text-blue-500 hover:text-blue-700"
+          class="text-blue-500 hover:text-blue-700 text-sm sm:text-base"
           on:click={goBack}
         >
           &larr; Back
         </button>
-        <h1 class="text-2xl font-bold text-center">Your Candidate Matches</h1>
         <button 
-          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-3 sm:px-4 rounded text-sm sm:text-base"
           on:click={restartQuiz}
         >
           Restart
         </button>
       </div>
       
-      <p class="mb-8 text-center">
-        Based on your responses, here are your candidate matches:
-      </p>
-      
       <EnhancedResults 
         candidates={candidateMatches} 
         bind:expandedCandidateId
+        {quizData}
+        {userAnswers}
       />
       
       <!-- Attribution -->

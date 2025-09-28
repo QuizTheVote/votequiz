@@ -40,7 +40,7 @@
     {/if}
   </p>
   
-  <h3 class="text-xl font-bold mb-4">{question.text}</h3>
+  <h3 class="text-base sm:text-xl font-bold mb-4">{question.text}</h3>
   {#if question.explanation}
     <p class="text-gray-600 mb-6">{question.explanation}</p>
   {/if}
@@ -48,7 +48,7 @@
   <div class="flex flex-col space-y-3">
     {#each scaleOptions as option}
       <button 
-        class={`p-3 rounded-lg border transition-colors ${
+        class={`p-2 sm:p-3 rounded-lg border transition-colors text-xs sm:text-base flex items-center justify-center ${
           currentAnswer === option.value 
             ? 'bg-blue-100 border-blue-500' 
             : 'border-gray-300 hover:bg-gray-50'

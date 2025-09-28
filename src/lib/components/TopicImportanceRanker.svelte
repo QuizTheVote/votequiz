@@ -50,6 +50,18 @@
     dispatch('change', { weights });
   }
   
+  // Move item up or down (for mobile buttons)
+  function moveItem(fromIndex: number, toIndex: number) {
+    if (toIndex < 0 || toIndex >= weights.length) return;
+    
+    const newWeights = [...weights];
+    const [movedItem] = newWeights.splice(fromIndex, 1);
+    newWeights.splice(toIndex, 0, movedItem);
+    
+    weights = newWeights;
+    recalculateWeights();
+  }
+  
   // Drag and drop functionality
   let draggedItem: number | null = null;
   let draggedOverItem: number | null = null;
@@ -126,43 +138,95 @@
   <div class="border border-gray-200 rounded-lg overflow-hidden">
     {#each weights as weight, index (weight.topicId)}
       <div 
-        class="topic-item bg-white px-3 py-2 border-b border-gray-200 last:border-0 relative flex items-center cursor-move hover:bg-blue-50 transition-colors"
-        role="button"
-        tabindex="0"
-        aria-label="Drag to reorder topic: {getTopicName(weight.topicId)}"
-        draggable="true"
-        on:dragstart={(e) => onDragStart(e, index)}
-        on:dragover={(e) => onDragOver(e, index)}
-        on:drop={(e) => onDrop(e, index)}
-        on:dragend={onDragEnd}
-        on:dragleave={onDragLeave}
+        class="topic-item bg-white border-b border-gray-200 last:border-0 hover:bg-blue-50 transition-colors"
+        role="listitem"
+        aria-label="Topic {index + 1}: {getTopicName(weight.topicId)}"
       >
-        <div class="absolute -left-1 top-1/2 -translate-y-1/2 w-5 text-center text-gray-400 font-bold text-sm">
-          {index + 1}
+        <!-- Desktop Layout -->
+        <div class="hidden sm:flex items-center px-3 py-2 relative cursor-move"
+             draggable="true"
+             on:dragstart={(e) => onDragStart(e, index)}
+             on:dragover={(e) => onDragOver(e, index)}
+             on:drop={(e) => onDrop(e, index)}
+             on:dragend={onDragEnd}
+             on:dragleave={onDragLeave}>
+          <div class="absolute -left-1 top-1/2 -translate-y-1/2 w-5 text-center text-gray-400 font-bold text-sm">
+            {index + 1}
+          </div>
+          
+          <div class="flex-grow flex justify-between items-center pl-4">
+            <div class="overflow-hidden">
+              <div class="font-medium text-base truncate">{getTopicName(weight.topicId)}</div>
+              {#if getTopicDescription(weight.topicId)}
+                <div class="text-xs text-gray-500 truncate">{getTopicDescription(weight.topicId)}</div>
+              {/if}
+            </div>
+          </div>
+          
+          <!-- Desktop: Drag handle -->
+          <div class="ml-2 flex-shrink-0 text-gray-400">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+            </svg>
+          </div>
         </div>
         
-        <div class="flex-grow flex justify-between items-center pl-4">
-          <div class="overflow-hidden">
-            <div class="font-medium truncate max-w-[16rem]">{getTopicName(weight.topicId)}</div>
-            {#if getTopicDescription(weight.topicId)}
-              <div class="text-xs text-gray-500 truncate max-w-[18rem]">{getTopicDescription(weight.topicId)}</div>
-            {/if}
+        <!-- Mobile Layout - Stacked -->
+        <div class="sm:hidden">
+          <!-- Topic Info -->
+          <div class="px-4 py-3">
+            <div class="flex items-start">
+              <span class="text-gray-400 font-bold text-sm mr-3 mt-0.5">{index + 1}.</span>
+              <div class="flex-1">
+                <div class="font-medium text-sm">{getTopicName(weight.topicId)}</div>
+                {#if getTopicDescription(weight.topicId)}
+                  <div class="text-xs text-gray-500 mt-1 leading-tight">{getTopicDescription(weight.topicId)}</div>
+                {/if}
+              </div>
+            </div>
           </div>
-          <div class="text-sm ml-2 flex-shrink-0 font-semibold bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-            {weight.weight}
+          
+          <!-- Mobile Controls - Centered below -->
+          <div class="px-4 pb-3 flex justify-center space-x-4">
+            <button 
+              class="flex items-center px-3 py-2 bg-gray-100 rounded border text-xs font-medium {index === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-100 hover:text-blue-600 active:bg-blue-200'}"
+              on:click={() => moveItem(index, index - 1)}
+              disabled={index === 0}
+            >
+              <svg class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+              </svg>
+              Move Up
+            </button>
+            <button 
+              class="flex items-center px-3 py-2 bg-gray-100 rounded border text-xs font-medium {index === weights.length - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-100 hover:text-blue-600 active:bg-blue-200'}"
+              on:click={() => moveItem(index, index + 1)}
+              disabled={index === weights.length - 1}
+            >
+              <svg class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+              Move Down
+            </button>
           </div>
-        </div>
-        
-        <div class="ml-2 flex-shrink-0 text-gray-400">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-          </svg>
         </div>
       </div>
     {/each}
   </div>
   
-  <div class="mt-4 bg-blue-50 p-3 rounded-lg text-xs text-blue-800">
-    <p><span class="font-semibold">How this affects your results:</span> Topics at the top (weight 10) matter more than those at the bottom (weight 1) when calculating your matches.</p>
+  <div class="mt-4 space-y-2">
+    <!-- Mobile Instructions -->
+    <div class="sm:hidden bg-gray-50 p-3 rounded-lg text-xs text-gray-700">
+      <p><span class="font-semibold">Mobile:</span> Use "Move Up" and "Move Down" buttons to reorder topics.</p>
+    </div>
+    
+    <!-- Desktop Instructions -->
+    <div class="hidden sm:block bg-gray-50 p-3 rounded-lg text-xs text-gray-700">
+      <p><span class="font-semibold">Desktop:</span> Drag topics to reorder them by importance.</p>
+    </div>
+    
+    <div class="bg-blue-50 p-3 rounded-lg text-xs text-blue-800">
+      <p><span class="font-semibold">How this affects your results:</span> Topics at the top (weight 10) matter more than those at the bottom (weight 1) when calculating your matches.</p>
+    </div>
   </div>
 </div> 
