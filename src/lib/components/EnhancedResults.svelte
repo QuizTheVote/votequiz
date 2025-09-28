@@ -7,6 +7,35 @@
   }>;
   export let expandedCandidateId: string | null = null;
   
+  // State for showing detailed answers
+  let showingAnswers: { [key: string]: boolean } = {};
+  
+  // Toggle topic answer details
+  function toggleTopicAnswers(candidateId: string, topicId: string) {
+    const key = `${candidateId}-${topicId}`;
+    showingAnswers[key] = !showingAnswers[key];
+  }
+  
+  // Placeholder functions - would need actual quiz data to implement
+  function getTopicQuestions(topicId: string) {
+    // This would need access to the quiz questions data
+    // For now, return placeholder
+    return [
+      { id: 'q1', text: 'Sample question for ' + topicId },
+      { id: 'q2', text: 'Another sample question for ' + topicId }
+    ];
+  }
+  
+  function getUserAnswer(questionId: string) {
+    // This would need access to user's answers
+    return 'Your answer here';
+  }
+  
+  function getCandidateAnswer(candidateId: string, questionId: string) {
+    // This would need access to candidate answers
+    return 'Candidate answer here';
+  }
+  
   function toggleCandidateDetails(candidateId: string) {
     if (expandedCandidateId === candidateId) {
       expandedCandidateId = null;
@@ -112,17 +141,48 @@
               <h4 class="text-lg font-semibold mb-3">Topic Matches</h4>
               <div class="space-y-3">
                 {#each sortedTopicMatches(candidate) as topicMatch}
-                  <div class="flex items-center">
-                    <div class="w-1/3 font-medium">{topicMatch.topicName}</div>
-                    <div class="w-2/3 flex items-center">
-                      <div class="flex-grow h-4 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                          class={`${getMatchColor(topicMatch.matchPercentage)} h-full`} 
-                          style={`width: ${topicMatch.matchPercentage}%`}
-                        ></div>
+                  <div class="space-y-2">
+                    <div class="flex items-center">
+                      <div class="w-1/3 font-medium">{topicMatch.topicName}</div>
+                      <div class="w-2/3 flex items-center">
+                        <div class="flex-grow h-4 bg-gray-200 rounded-full overflow-hidden">
+                          <div 
+                            class={`${getMatchColor(topicMatch.matchPercentage)} h-full`} 
+                            style={`width: ${topicMatch.matchPercentage}%`}
+                          ></div>
+                        </div>
+                        <span class="ml-2 w-10 text-right font-bold">{topicMatch.matchPercentage}%</span>
+                        <button 
+                          class="ml-2 text-xs text-blue-600 hover:text-blue-800 underline"
+                          on:click={() => toggleTopicAnswers(candidate.id, topicMatch.topicId)}
+                        >
+                          View Answers
+                        </button>
                       </div>
-                      <span class="ml-2 w-10 text-right font-bold">{topicMatch.matchPercentage}%</span>
                     </div>
+                    
+                    <!-- Topic Answer Details -->
+                    {#if showingAnswers[`${candidate.id}-${topicMatch.topicId}`]}
+                      <div class="ml-4 p-3 bg-blue-50 rounded-lg text-sm">
+                        <p class="font-medium text-blue-800 mb-2">Questions & Answers:</p>
+                        {#each getTopicQuestions(topicMatch.topicId) as question}
+                          <div class="mb-2 pb-2 border-b border-blue-200 last:border-b-0">
+                            <p class="font-medium text-gray-700">{question.text}</p>
+                            <div class="mt-1 flex items-center gap-4">
+                              <span class="text-gray-600">Your answer: <strong>{getUserAnswer(question.id)}</strong></span>
+                              <span class="text-blue-700">{candidate.name}: <strong>{getCandidateAnswer(candidate.id, question.id)}</strong></span>
+                              <span class="text-xs">
+                                {#if getUserAnswer(question.id) === getCandidateAnswer(candidate.id, question.id)}
+                                  <span class="text-green-600">✓ Match</span>
+                                {:else}
+                                  <span class="text-red-600">✗ Different</span>
+                                {/if}
+                              </span>
+                            </div>
+                          </div>
+                        {/each}
+                      </div>
+                    {/if}
                   </div>
                 {/each}
               </div>
