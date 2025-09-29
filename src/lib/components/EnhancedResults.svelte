@@ -169,24 +169,38 @@
                     
                     <!-- Topic Answer Details -->
                     {#if showingAnswers[`${candidate.id}-${topicMatch.topicId}`]}
-                      <div class="ml-4 p-3 bg-blue-50 rounded-lg text-xs sm:text-sm">
-                        <p class="font-medium text-blue-800 mb-2">Questions & Answers:</p>
+                      <div class="ml-4 space-y-3">
                         {#each getTopicQuestions(topicMatch.topicId) as question}
-                          <div class="mb-2 pb-2 border-b border-blue-200 last:border-b-0">
-                            <p class="font-medium text-gray-700 text-xs sm:text-sm">{question.text}</p>
-                            <div class="mt-1 space-y-1">
-                              <div class="text-gray-600 text-xs sm:text-sm">
-                                Your answer: <strong>{getUserAnswer(question.id)}</strong>
-                              </div>
-                              <div class="text-xs sm:text-sm">
-                                {candidate.name}: 
-                                <strong class={getUserAnswer(question.id) === getCandidateAnswer(candidate.id, question.id) 
-                                  ? 'text-green-600' 
-                                  : 'text-red-600'}>
-                                  {getCandidateAnswer(candidate.id, question.id)}
-                                </strong>
-                              </div>
+                          {@const userAnswer = getUserAnswer(question.id)}
+                          {@const candidateAnswer = getCandidateAnswer(candidate.id, question.id)}
+                          {@const isMatch = userAnswer === candidateAnswer}
+                          
+                          <div class="p-3 rounded-lg {isMatch ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}">
+                            <!-- Match/Mismatch Header -->
+                            <div class="flex items-center mb-2">
+                              <span class="text-sm font-bold {isMatch ? 'text-green-700' : 'text-red-700'}">
+                                {isMatch ? '✓ MATCH' : '✗ DIFFERENT'}
+                              </span>
                             </div>
+                            
+                            <!-- Question -->
+                            <p class="text-sm font-semibold text-gray-800 mb-2">{question.text}</p>
+                            
+                            <!-- Answers -->
+                            {#if isMatch}
+                              <p class="text-xs text-gray-600">
+                                Both chose: <span class="font-medium text-green-700">{userAnswer}</span>
+                              </p>
+                            {:else}
+                              <div class="space-y-1">
+                                <p class="text-xs text-gray-600">
+                                  You: <span class="font-medium">{userAnswer}</span>
+                                </p>
+                                <p class="text-xs text-gray-600">
+                                  {candidate.name}: <span class="font-medium text-red-600">{candidateAnswer}</span>
+                                </p>
+                              </div>
+                            {/if}
                           </div>
                         {/each}
                       </div>
