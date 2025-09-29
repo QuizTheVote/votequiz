@@ -12,10 +12,19 @@
   // State for showing detailed answers
   let showingAnswers: { [key: string]: boolean } = {};
   
-  // Toggle topic answer details
+  // Toggle topic answer details (accordion behavior - only one open at a time)
   function toggleTopicAnswers(candidateId: string, topicId: string) {
     const key = `${candidateId}-${topicId}`;
-    showingAnswers[key] = !showingAnswers[key];
+    
+    // If this panel is already open, close it
+    if (showingAnswers[key]) {
+      showingAnswers[key] = false;
+    } else {
+      // Close all other panels first (accordion behavior)
+      showingAnswers = {};
+      // Then open this one
+      showingAnswers[key] = true;
+    }
   }
   
   // Get real questions for a specific topic
@@ -175,7 +184,7 @@
                           {@const candidateAnswer = getCandidateAnswer(candidate.id, question.id)}
                           {@const isMatch = userAnswer === candidateAnswer}
                           
-                          <div class="p-3 rounded-lg {isMatch ? 'bg-green-25 border border-green-100' : 'bg-red-25 border border-red-100'}" style="{isMatch ? 'background-color: rgba(34, 197, 94, 0.05);' : 'background-color: rgba(239, 68, 68, 0.05);'}">
+                          <div class="p-3 rounded-lg border border-gray-300" style="{isMatch ? 'background-color: rgba(34, 197, 94, 0.05);' : 'background-color: rgba(239, 68, 68, 0.05);'}">
                             <!-- Match/Mismatch Header -->
                             <div class="flex items-center mb-2">
                               <span class="text-sm font-bold {isMatch ? 'text-green-700' : 'text-red-700'}">
@@ -189,7 +198,7 @@
                             <!-- Answers - Consistent Format -->
                             <div class="space-y-1">
                               <p class="text-xs text-gray-600">
-                                You: <span class="font-medium {isMatch ? 'text-green-700' : 'text-gray-800'}">{userAnswer}</span>
+                                Your answer: <span class="font-medium text-gray-600">{userAnswer}</span>
                               </p>
                               <p class="text-xs text-gray-600">
                                 {candidate.name}: <span class="font-medium {isMatch ? 'text-green-700' : 'text-red-600'}">{candidateAnswer}</span>
