@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { Candidate, QuizData, QuizDataSVO, UserAnswer, UserAnswerSVO } from '$lib/sheets';
+  import type { Candidate, QuizData, QuizDataSVO } from '$lib/sheets';
+  import type { UserAnswer, UserAnswerSVO } from '$lib/scorer';
   
   export let candidates: Array<Candidate & { 
     matchPercentage: number, 
