@@ -162,7 +162,7 @@
                           class="ml-2 text-xs text-blue-600 hover:text-blue-800 underline"
                           on:click={() => toggleTopicAnswers(candidate.id, topicMatch.topicId)}
                         >
-                          View Answers
+                          {showingAnswers[`${candidate.id}-${topicMatch.topicId}`] ? 'Hide Answers' : 'View Answers'}
                         </button>
                       </div>
                     </div>
@@ -175,7 +175,7 @@
                           {@const candidateAnswer = getCandidateAnswer(candidate.id, question.id)}
                           {@const isMatch = userAnswer === candidateAnswer}
                           
-                          <div class="p-3 rounded-lg {isMatch ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}">
+                          <div class="p-3 rounded-lg {isMatch ? 'bg-green-25 border border-green-100' : 'bg-red-25 border border-red-100'}" style="{isMatch ? 'background-color: rgba(34, 197, 94, 0.05);' : 'background-color: rgba(239, 68, 68, 0.05);'}">
                             <!-- Match/Mismatch Header -->
                             <div class="flex items-center mb-2">
                               <span class="text-sm font-bold {isMatch ? 'text-green-700' : 'text-red-700'}">
@@ -186,21 +186,15 @@
                             <!-- Question -->
                             <p class="text-sm font-semibold text-gray-800 mb-2">{question.text}</p>
                             
-                            <!-- Answers -->
-                            {#if isMatch}
+                            <!-- Answers - Consistent Format -->
+                            <div class="space-y-1">
                               <p class="text-xs text-gray-600">
-                                Both chose: <span class="font-medium text-green-700">{userAnswer}</span>
+                                You: <span class="font-medium {isMatch ? 'text-green-700' : 'text-gray-800'}">{userAnswer}</span>
                               </p>
-                            {:else}
-                              <div class="space-y-1">
-                                <p class="text-xs text-gray-600">
-                                  You: <span class="font-medium">{userAnswer}</span>
-                                </p>
-                                <p class="text-xs text-gray-600">
-                                  {candidate.name}: <span class="font-medium text-red-600">{candidateAnswer}</span>
-                                </p>
-                              </div>
-                            {/if}
+                              <p class="text-xs text-gray-600">
+                                {candidate.name}: <span class="font-medium {isMatch ? 'text-green-700' : 'text-red-600'}">{candidateAnswer}</span>
+                              </p>
+                            </div>
                           </div>
                         {/each}
                       </div>
