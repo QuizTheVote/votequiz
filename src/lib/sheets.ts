@@ -154,11 +154,12 @@ function parseCSV(csvText: string): any[] {
   const lines = csvText.split('\n').filter(line => line.trim());
   if (lines.length === 0) return [];
   
-  const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+  // Parse headers with proper CSV handling
+  const headers = parseCSVLine(lines[0]);
   const rows = [];
   
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(',').map(v => v.replace(/"/g, '').trim());
+    const values = parseCSVLine(lines[i]);
     const row: any = {};
     headers.forEach((header, index) => {
       row[header] = values[index] || '';
@@ -167,6 +168,41 @@ function parseCSV(csvText: string): any[] {
   }
   
   return rows;
+}
+
+// Proper CSV line parsing that handles quoted fields with commas
+function parseCSVLine(line: string): string[] {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const nextChar = line[i + 1];
+    
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        // Escaped quote
+        current += '"';
+        i++; // Skip next quote
+      } else {
+        // Toggle quote state
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      // Field delimiter outside quotes
+      result.push(current.trim());
+      current = '';
+    } else {
+      // Regular character
+      current += char;
+    }
+  }
+  
+  // Add final field
+  result.push(current.trim());
+  
+  return result;
 }
 
 export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDataSVO> {
