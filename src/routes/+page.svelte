@@ -409,8 +409,15 @@
                         src={candidate.photo} 
                         alt={candidate.name}
                         class="absolute w-12 h-12 rounded-full object-cover"
+                        on:error={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling.style.display = 'flex';
+                        }}
                         loading="lazy"
                       />
+                      <div class="hidden absolute w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                        <span class="text-gray-500 text-sm">{candidate.name.charAt(0)}</span>
+                      </div>
                     {:else}
                       <div class="absolute w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
                         <span class="text-gray-500 text-sm">{candidate.name.charAt(0)}</span>
