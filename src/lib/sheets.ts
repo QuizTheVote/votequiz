@@ -223,6 +223,11 @@ export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDat
     console.log('Quiz_Data rows:', quizDataRows.length);
     console.log('Candidates found:', candidates.length);
     console.log('Topics found:', topics.length);
+    
+    // Debug candidate photo URLs
+    candidates.forEach(candidate => {
+      console.log(`🖼️ ${candidate.name} photo:`, candidate.photo);
+    });
 
     // Parse questions from Quiz_Data
     const questions: QuestionSVO[] = [];
