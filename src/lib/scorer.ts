@@ -380,12 +380,18 @@ export function calculateWeightedSVOMatches(
   const candidateMatches = candidates.map(candidate => {
     // Group questions by topic and calculate topic-level similarities
     const topicSimilarities: Record<string, { total: number, count: number }> = {};
+    let answeredQuestions = 0;
     
     for (const question of activeQuestions) {
       const userAnswer = userAnswers.find(a => a.questionId === question.id);
       const candidateAnswer = candidateAnswers.find(
         a => a.candidateId === candidate.id && a.questionId === question.id
       );
+      
+      // Count questions candidate actually answered (not null/empty)
+      if (candidateAnswer && candidateAnswer.value !== null && candidateAnswer.value !== '' && candidateAnswer.value !== undefined) {
+        answeredQuestions++;
+      }
       
       if (userAnswer && candidateAnswer) {
         const similarity = calculateQuestionSimilarity(
@@ -426,10 +432,20 @@ export function calculateWeightedSVOMatches(
     // Calculate overall weighted average
     const overallMatch = totalWeight > 0 ? weightedTotal / totalWeight : 0;
     
+    // Calculate participation rate
+    const totalActiveQuestions = activeQuestions.length;
+    const participationRate = totalActiveQuestions > 0 ? answeredQuestions / totalActiveQuestions : 0;
+    
+    // Debug logging for participation tracking
+    console.log(`📊 ${candidate.name}: answered ${answeredQuestions}/${totalActiveQuestions} questions (${Math.round(participationRate * 100)}% participation)`);
+    
     return {
       ...candidate,
       matchPercentage: Math.round(overallMatch * 100),
-      topicMatches: topicMatches.sort((a, b) => b.matchPercentage - a.matchPercentage)
+      topicMatches: topicMatches.sort((a, b) => b.matchPercentage - a.matchPercentage),
+      participationRate: participationRate,
+      answeredQuestions: answeredQuestions,
+      totalQuestions: totalActiveQuestions
     };
   });
   

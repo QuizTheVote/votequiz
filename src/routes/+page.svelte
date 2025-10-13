@@ -28,8 +28,8 @@
   }> = [];
   
   // Separate participating and non-participating candidates
-  $: participatingCandidates = candidateMatches.filter(c => (c.participationRate || 1) >= 0.5);
-  $: nonParticipatingCandidates = candidateMatches.filter(c => (c.participationRate || 1) < 0.5);
+  $: participatingCandidates = candidateMatches.filter(c => (c.participationRate || 0) >= 0.5);
+  $: nonParticipatingCandidates = candidateMatches.filter(c => (c.participationRate || 0) < 0.5);
   
   // Debug logging for candidate classification
   $: {
