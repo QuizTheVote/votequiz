@@ -21,8 +21,15 @@
   let userTopicWeights: UserTopicWeight[] = [];
   let candidateMatches: Array<Candidate & { 
     matchPercentage: number,
-    topicMatches?: { topicId: string, topicName: string, matchPercentage: number }[] 
+    topicMatches?: { topicId: string, topicName: string, matchPercentage: number }[],
+    participationRate?: number,
+    answeredQuestions?: number,
+    totalQuestions?: number
   }> = [];
+  
+  // Separate participating and non-participating candidates
+  $: participatingCandidates = candidateMatches.filter(c => (c.participationRate || 1) >= 0.5);
+  $: nonParticipatingCandidates = candidateMatches.filter(c => (c.participationRate || 1) < 0.5);
   let loading = true;
   let error: string | null = null;
   let expandedCandidateId: string | null = null;
@@ -365,12 +372,66 @@
         </button>
       </div>
       
-      <EnhancedResults 
-        candidates={candidateMatches} 
-        bind:expandedCandidateId
-        {quizData}
-        {userAnswers}
-      />
+      <!-- Participating Candidates -->
+      {#if participatingCandidates.length > 0}
+        <EnhancedResults 
+          candidates={participatingCandidates} 
+          bind:expandedCandidateId
+          {quizData}
+          {userAnswers}
+        />
+      {/if}
+      
+      <!-- Non-Participating Candidates -->
+      {#if nonParticipatingCandidates.length > 0}
+        <div class="mt-8 pt-6 border-t border-gray-200">
+          <h2 class="text-lg font-semibold mb-4 text-gray-700">Additional Candidates</h2>
+          <p class="text-sm text-gray-600 mb-4">These candidates did not provide sufficient responses for matching.</p>
+          
+          <div class="space-y-3">
+            {#each nonParticipatingCandidates as candidate}
+              <div class="border rounded-lg p-4 bg-gray-50">
+                <div class="flex items-center">
+                  <div class="relative w-12 h-12 mr-3">
+                    {#if candidate.photo}
+                      <img 
+                        src={candidate.photo} 
+                        alt={candidate.name}
+                        class="absolute w-12 h-12 rounded-full object-cover"
+                        loading="lazy"
+                      />
+                    {:else}
+                      <div class="absolute w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                        <span class="text-gray-500 text-sm">{candidate.name.charAt(0)}</span>
+                      </div>
+                    {/if}
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="text-base font-semibold">{candidate.name}</h3>
+                    <p class="text-sm text-gray-600">{candidate.party}</p>
+                    <p class="text-xs text-gray-500 mt-1">
+                      {#if (candidate.answeredQuestions || 0) === 0}
+                        Did not respond to survey
+                      {:else}
+                        Responded to {candidate.answeredQuestions} of {candidate.totalQuestions} questions
+                      {/if}
+                    </p>
+                  </div>
+                  {#if candidate.website}
+                    <a 
+                      href={candidate.website} 
+                      target="_blank"
+                      class="ml-3 text-xs text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Visit Website
+                    </a>
+                  {/if}
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
       
       <!-- Attribution -->
       <div class="text-center mt-8 pt-6 border-t border-gray-200">
