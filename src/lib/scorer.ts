@@ -287,12 +287,18 @@ export function calculateSVOMatches(
   const candidateScores = candidates.map(candidate => {
     let totalSimilarity = 0;
     let questionCount = 0;
+    let answeredQuestions = 0;
     
     for (const question of activeQuestions) {
       const userAnswer = userAnswers.find(a => a.questionId === question.id);
       const candidateAnswer = candidateAnswers.find(
         a => a.candidateId === candidate.id && a.questionId === question.id
       );
+      
+      // Count questions candidate actually answered (not null/empty)
+      if (candidateAnswer && candidateAnswer.value !== null && candidateAnswer.value !== '' && candidateAnswer.value !== undefined) {
+        answeredQuestions++;
+      }
       
       if (userAnswer && candidateAnswer) {
         const similarity = calculateQuestionSimilarity(
@@ -308,9 +314,16 @@ export function calculateSVOMatches(
     // Calculate average similarity across all questions
     const averageSimilarity = questionCount > 0 ? totalSimilarity / questionCount : 0;
     
+    // Calculate participation rate
+    const totalActiveQuestions = activeQuestions.length;
+    const participationRate = totalActiveQuestions > 0 ? answeredQuestions / totalActiveQuestions : 0;
+    
     return {
       ...candidate,
-      rawScore: averageSimilarity
+      rawScore: averageSimilarity,
+      participationRate: participationRate,
+      answeredQuestions: answeredQuestions,
+      totalQuestions: totalActiveQuestions
     };
   });
   
