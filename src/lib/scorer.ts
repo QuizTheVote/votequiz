@@ -318,6 +318,9 @@ export function calculateSVOMatches(
     const totalActiveQuestions = activeQuestions.length;
     const participationRate = totalActiveQuestions > 0 ? answeredQuestions / totalActiveQuestions : 0;
     
+    // Debug logging for participation tracking
+    console.log(`📊 ${candidate.name}: answered ${answeredQuestions}/${totalActiveQuestions} questions (${Math.round(participationRate * 100)}% participation)`);
+    
     return {
       ...candidate,
       rawScore: averageSimilarity,

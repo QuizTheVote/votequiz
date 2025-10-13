@@ -30,6 +30,17 @@
   // Separate participating and non-participating candidates
   $: participatingCandidates = candidateMatches.filter(c => (c.participationRate || 1) >= 0.5);
   $: nonParticipatingCandidates = candidateMatches.filter(c => (c.participationRate || 1) < 0.5);
+  
+  // Debug logging for candidate classification
+  $: {
+    if (candidateMatches.length > 0) {
+      console.log(`🔍 CANDIDATE CLASSIFICATION:`);
+      console.log(`Participating (≥50%): ${participatingCandidates.length} candidates`);
+      console.log(`Non-participating (<50%): ${nonParticipatingCandidates.length} candidates`);
+      participatingCandidates.forEach(c => console.log(`  ✅ ${c.name}: ${Math.round((c.participationRate || 0) * 100)}%`));
+      nonParticipatingCandidates.forEach(c => console.log(`  ❌ ${c.name}: ${Math.round((c.participationRate || 0) * 100)}%`));
+    }
+  }
   let loading = true;
   let error: string | null = null;
   let expandedCandidateId: string | null = null;
