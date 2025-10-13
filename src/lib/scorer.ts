@@ -359,7 +359,10 @@ export function calculateWeightedSVOMatches(
   topics: Topic[]
 ): Array<Candidate & { 
   matchPercentage: number, 
-  topicMatches: { topicId: string, topicName: string, matchPercentage: number }[] 
+  topicMatches: { topicId: string, topicName: string, matchPercentage: number }[],
+  participationRate: number,
+  answeredQuestions: number,
+  totalQuestions: number
 }> {
   // Filter to only active questions
   const activeQuestions = questions.filter(q => q.active);
