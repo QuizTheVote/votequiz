@@ -101,11 +101,19 @@
     }
     
     // Move to next active question
+    console.log(`🔄 NAVIGATION DEBUG:`);
+    console.log(`Current question index: ${currentQuestionIndex}`);
+    console.log(`Active questions length: ${activeQuestions.length}`);
+    console.log(`Current question:`, currentQuestion);
+    console.log(`Next question would be:`, activeQuestions[currentQuestionIndex + 1]);
+    
     if (currentQuestionIndex < activeQuestions.length - 1) {
       currentQuestionIndex++;
+      console.log(`✅ Moving to question ${currentQuestionIndex + 1}`);
     } else {
       // Go to topic importance ranking screen
       currentQuestionIndex = activeQuestions.length;
+      console.log(`🎯 Moving to topic ranking`);
     }
   }
 
@@ -204,6 +212,15 @@
   $: activeQuestions = useSVOMode 
     ? (quizData as QuizDataSVO)?.questions.filter(q => q.active) || []
     : quizData?.questions || [];
+    
+  // Debug active questions
+  $: if (activeQuestions.length > 0) {
+    console.log(`📋 ACTIVE QUESTIONS DEBUG:`);
+    console.log(`Total active questions: ${activeQuestions.length}`);
+    activeQuestions.forEach((q, i) => {
+      console.log(`  ${i + 1}. ${q.id}: "${q.text}" (${q.type}, active: ${(q as QuestionSVO).active})`);
+    });
+  }
     
   // Use active questions for current question (not full question array)
   $: currentQuestion = activeQuestions[currentQuestionIndex];

@@ -17,18 +17,18 @@
   let localSelectedOptions: string[] = selectedOptions;
 
   function toggleOption(option: string) {
-    if (localSelectedOptions.includes(option)) {
+    if (localSelectedOptions?.includes(option)) {
       // Remove option
-      localSelectedOptions = localSelectedOptions.filter(o => o !== option);
+      localSelectedOptions = localSelectedOptions?.filter(o => o !== option) || [];
     } else {
       // Add option
-      localSelectedOptions = [...localSelectedOptions, option];
+      localSelectedOptions = [...(localSelectedOptions || []), option];
     }
   }
 
   function submitAnswer() {
     // Convert to comma-separated string and submit
-    const answerValue = localSelectedOptions.length > 0 ? localSelectedOptions.join(',') : '';
+    const answerValue = (localSelectedOptions?.length || 0) > 0 ? localSelectedOptions?.join(',') || '' : '';
     onAnswer(question.id, answerValue);
   }
 
@@ -69,10 +69,10 @@
     {/each}
   </div>
 
-  {#if localSelectedOptions.length > 0}
+  {#if localSelectedOptions?.length > 0}
     <div class="mt-4 p-3 bg-blue-50 rounded-lg">
       <p class="text-sm text-blue-700">
-        Selected: {localSelectedOptions.join(', ')}
+        Selected: {localSelectedOptions?.join(', ') || ''}
       </p>
     </div>
   {/if}
@@ -81,12 +81,12 @@
   <div class="mt-6 flex justify-end">
     <button 
       class={`px-6 py-3 rounded-lg font-semibold transition-colors ${
-        localSelectedOptions.length > 0 
+        (localSelectedOptions?.length || 0) > 0 
           ? 'bg-blue-600 text-white hover:bg-blue-700' 
           : 'bg-gray-300 text-gray-500 cursor-not-allowed'
       }`}
       on:click={submitAnswer}
-      disabled={localSelectedOptions.length === 0}
+      disabled={(localSelectedOptions?.length || 0) === 0}
     >
       Continue
     </button>
