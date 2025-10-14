@@ -1,5 +1,31 @@
 import Tabletop from 'tabletop';
 
+/**
+ * Converts Google Drive sharing URLs to direct image URLs
+ * @param url - Original photo URL (could be Google Drive sharing URL or direct URL)
+ * @returns Direct image URL suitable for <img> src attribute
+ */
+export function convertToDirectImageUrl(url: string): string {
+  if (!url || typeof url !== 'string') {
+    return url;
+  }
+
+  // Check if it's a Google Drive sharing URL
+  const googleDriveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (googleDriveMatch) {
+    const fileId = googleDriveMatch[1];
+    return `https://lh3.googleusercontent.com/d/${fileId}=w400`;
+  }
+
+  // Check if it's already a converted Google Drive URL
+  if (url.includes('lh3.googleusercontent.com/d/')) {
+    return url;
+  }
+
+  // For all other URLs (CMS, direct image URLs, etc.), return as-is
+  return url;
+}
+
 export interface Candidate {
   id: string;
   name: string;
@@ -225,9 +251,23 @@ export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDat
     console.log('Candidates found:', candidates.length);
     console.log('Topics found:', topics.length);
     
-    // Debug candidate photo URLs
+    // Convert Google Drive sharing URLs to direct image URLs
     candidates.forEach(candidate => {
-      console.log(`🖼️ ${candidate.name} photo:`, candidate.photo);
+      if (candidate.photo) {
+        const originalUrl = candidate.photo;
+        candidate.photo = convertToDirectImageUrl(candidate.photo);
+        
+        // Debug logging
+        if (originalUrl !== candidate.photo) {
+          console.log(`🔄 Converted ${candidate.name} photo URL:`);
+          console.log(`   From: ${originalUrl}`);
+          console.log(`   To: ${candidate.photo}`);
+        } else {
+          console.log(`🖼️ ${candidate.name} photo (no conversion needed):`, candidate.photo);
+        }
+      } else {
+        console.log(`⚠️ ${candidate.name} has no photo URL`);
+      }
     });
 
     // Parse questions from Quiz_Data
@@ -327,6 +367,21 @@ export async function fetchSheetData(sheetId: string | null): Promise<QuizData> 
             const candidates = tabletop.sheets('Candidates').all() as Candidate[];
             const questions = tabletop.sheets('Questions').all() as Question[];
             const candidateAnswers = tabletop.sheets('CandidateAnswers').all() as CandidateAnswer[];
+            
+            // Convert Google Drive sharing URLs to direct image URLs for legacy path
+            candidates.forEach(candidate => {
+              if (candidate.photo) {
+                const originalUrl = candidate.photo;
+                candidate.photo = convertToDirectImageUrl(candidate.photo);
+                
+                // Debug logging
+                if (originalUrl !== candidate.photo) {
+                  console.log(`🔄 [Legacy] Converted ${candidate.name} photo URL:`);
+                  console.log(`   From: ${originalUrl}`);
+                  console.log(`   To: ${candidate.photo}`);
+                }
+              }
+            });
             
             // Topics sheet is optional
             let topics: Topic[] = [];
