@@ -77,9 +77,9 @@
     
     if (questionType === 'support_3' && !isNaN(numAnswer)) {
       const labels = {
-        1: 'Oppose',
-        2: 'Neutral', 
-        3: 'Strong Support'
+        1: 'Less Support',
+        2: 'Same Level', 
+        3: 'More Support'
       };
       return labels[numAnswer as keyof typeof labels] || answer.toString();
     }
@@ -237,7 +237,7 @@
                                 isNoAnswer ? 'text-yellow-700' :
                                 isMatch ? 'text-green-700' : 'text-red-700'
                               }">
-                                {isNoAnswer ? '⚠ NO ANSWER' : isMatch ? '✓ MATCH' : '✗ DIFFERENT'}
+                                {isNoAnswer ? '⚠ NO CANDIDATE ANSWER PROVIDED' : isMatch ? '✓ MATCH' : '✗ DIFFERENT'}
                               </span>
                             </div>
                             
