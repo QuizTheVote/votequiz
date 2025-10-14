@@ -46,7 +46,36 @@
     const candidateAnswer = quizData.candidateAnswers.find(a => 
       a.candidateId === candidateId && a.questionId === questionId
     );
-    return candidateAnswer ? candidateAnswer.value : 'No answer';
+    return candidateAnswer ? candidateAnswer.value : 'Did not answer';
+  }
+  
+  // Convert numeric answers to human-readable labels
+  function formatAnswer(answer: string | number, questionType: string): string {
+    if (answer === 'Did not answer' || answer === 'No answer' || answer === 'No data') {
+      return 'Did not answer';
+    }
+    
+    if (questionType === 'agree_5' && typeof answer === 'number') {
+      const labels = {
+        1: 'Strongly Disagree',
+        2: 'Somewhat Disagree', 
+        3: 'Neutral',
+        4: 'Somewhat Agree',
+        5: 'Strongly Agree'
+      };
+      return labels[answer as keyof typeof labels] || answer.toString();
+    }
+    
+    if (questionType === 'support_3' && typeof answer === 'number') {
+      const labels = {
+        1: 'Oppose',
+        2: 'Neutral', 
+        3: 'Strong Support'
+      };
+      return labels[answer as keyof typeof labels] || answer.toString();
+    }
+    
+    return answer.toString();
   }
   
   function toggleCandidateDetails(candidateId: string) {
@@ -183,13 +212,23 @@
                         {#each getTopicQuestions(topicMatch.topicId) as question}
                           {@const userAnswer = getUserAnswer(question.id)}
                           {@const candidateAnswer = getCandidateAnswer(candidate.id, question.id)}
+                          {@const formattedUserAnswer = formatAnswer(userAnswer, question.type)}
+                          {@const formattedCandidateAnswer = formatAnswer(candidateAnswer, question.type)}
                           {@const isMatch = userAnswer === candidateAnswer}
+                          {@const isNoAnswer = candidateAnswer === 'Did not answer'}
                           
-                          <div class="p-3 rounded-lg border border-gray-300" style="{isMatch ? 'background-color: rgba(34, 197, 94, 0.05);' : 'background-color: rgba(239, 68, 68, 0.05);'}">
-                            <!-- Match/Mismatch Header -->
+                          <div class="p-3 rounded-lg border border-gray-300" style="{
+                            isNoAnswer ? 'background-color: rgba(251, 191, 36, 0.05);' :
+                            isMatch ? 'background-color: rgba(34, 197, 94, 0.05);' : 
+                            'background-color: rgba(239, 68, 68, 0.05);'
+                          }">
+                            <!-- Match/Mismatch/No Answer Header -->
                             <div class="flex items-center mb-2">
-                              <span class="text-sm font-bold {isMatch ? 'text-green-700' : 'text-red-700'}">
-                                {isMatch ? '✓ MATCH' : '✗ DIFFERENT'}
+                              <span class="text-sm font-bold {
+                                isNoAnswer ? 'text-yellow-700' :
+                                isMatch ? 'text-green-700' : 'text-red-700'
+                              }">
+                                {isNoAnswer ? '⚠ NO ANSWER' : isMatch ? '✓ MATCH' : '✗ DIFFERENT'}
                               </span>
                             </div>
                             
@@ -199,10 +238,13 @@
                             <!-- Answers - Consistent Format -->
                             <div class="space-y-1">
                               <p class="text-xs text-gray-600">
-                                Your answer: <span class="font-medium text-gray-600">{userAnswer}</span>
+                                Your answer: <span class="font-medium text-gray-600">{formattedUserAnswer}</span>
                               </p>
                               <p class="text-xs text-gray-600">
-                                {candidate.name}: <span class="font-medium {isMatch ? 'text-green-700' : 'text-red-600'}">{candidateAnswer}</span>
+                                {candidate.name}: <span class="font-medium {
+                                  isNoAnswer ? 'text-yellow-600' :
+                                  isMatch ? 'text-green-700' : 'text-red-600'
+                                }">{formattedCandidateAnswer}</span>
                               </p>
                             </div>
                           </div>
