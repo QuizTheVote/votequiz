@@ -176,7 +176,7 @@
           <!-- Topic Info -->
           <div class="px-4 py-3">
             <div class="flex items-start">
-              <span class="text-gray-400 font-bold text-sm mr-4 mt-0.5 w-6 text-center">{index + 1}.</span>
+              <span class="text-gray-400 font-bold text-sm mr-4 mt-0.5 w-6 text-center">{index + 1}</span>
               <div class="flex-1">
                 <div class="font-medium text-sm">{getTopicName(weight.topicId)}</div>
                 {#if getTopicDescription(weight.topicId)}
