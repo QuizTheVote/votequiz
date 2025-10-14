@@ -150,11 +150,11 @@
              on:drop={(e) => onDrop(e, index)}
              on:dragend={onDragEnd}
              on:dragleave={onDragLeave}>
-          <div class="absolute -left-1 top-1/2 -translate-y-1/2 w-5 text-center text-gray-400 font-bold text-sm">
+          <div class="absolute left-2 top-1/2 -translate-y-1/2 w-6 text-center text-gray-400 font-bold text-sm">
             {index + 1}
           </div>
           
-          <div class="flex-grow flex justify-between items-center pl-4">
+          <div class="flex-grow flex justify-between items-center pl-10">
             <div class="overflow-hidden">
               <div class="font-medium text-base truncate">{getTopicName(weight.topicId)}</div>
               {#if getTopicDescription(weight.topicId)}
@@ -176,7 +176,7 @@
           <!-- Topic Info -->
           <div class="px-4 py-3">
             <div class="flex items-start">
-              <span class="text-gray-400 font-bold text-sm mr-3 mt-0.5">{index + 1}.</span>
+              <span class="text-gray-400 font-bold text-sm mr-4 mt-0.5 w-6 text-center">{index + 1}.</span>
               <div class="flex-1">
                 <div class="font-medium text-sm">{getTopicName(weight.topicId)}</div>
                 {#if getTopicDescription(weight.topicId)}
