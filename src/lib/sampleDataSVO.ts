@@ -8,51 +8,57 @@ export const sampleDataSVO: QuizDataSVO = {
   candidates: [
     {
       id: 'candidate1',
-      name: 'Ronald the Radical',
-      party: 'Progressive Alliance',
+      name: 'Ronald Smith',
+      party: 'Reform Alliance',
       photo: 'https://lh3.googleusercontent.com/d/1vpiozHoC6UudPBAMK72mR_xF5ef2CyvS=w400',
       bio: 'Advocates for transformative change through bold progressive policies, including wealth redistribution and expanded government programs.',
-      website: 'https://example.com/ronald'
+      link_url: 'https://example.com/ronald',
+      link_text: 'Read Our Coverage'
     },
     {
       id: 'candidate2',
-      name: 'Pria the Progressive',
+      name: 'Pria Davis',
       party: 'Democratic Coalition',
       photo: 'https://lh3.googleusercontent.com/d/1FKVSWpI4R7zeexj50mrpYMTHWThAadhA=w400',
       bio: 'Supports progressive reforms with practical implementation, focusing on social justice, environmental protection, and expanded public services.',
-      website: 'https://example.com/pria'
+      link_url: 'https://example.com/pria',
+      link_text: 'Campaign Website'
     },
     {
       id: 'candidate3',
-      name: 'Marcus the Moderate',
+      name: 'Marcus Johnson',
       party: 'Centrist Coalition',
       photo: 'https://lh3.googleusercontent.com/d/1pgz3uGi4INKsuSEtqWKE3teT2iZuyMRu=w400',
       bio: 'Seeks balanced solutions that bridge partisan divides, emphasizing pragmatic approaches to complex policy challenges.',
-      website: 'https://example.com/marcus'
+      link_url: 'https://example.com/marcus',
+      link_text: 'View Profile'
     },
     {
       id: 'candidate4',
-      name: 'Linda the Libertarian',
+      name: 'Linda Williams',
       party: 'Freedom Party',
       photo: 'https://lh3.googleusercontent.com/d/1rG_Io2hnu5dhTkBb9SeT-8RNovQygRYw=w400',
       bio: 'Champions individual liberty and minimal government intervention, supporting free markets and personal responsibility.',
-      website: 'https://example.com/linda'
+      link_url: 'https://example.com/linda',
+      link_text: 'Visit Website'
     },
     {
       id: 'candidate5',
-      name: 'Carla the Conservative',
+      name: 'Carla Martinez',
       party: 'Traditional Values Party',
       photo: 'https://lh3.googleusercontent.com/d/1YJRegnhDJ0TZwLJDVypaYk6J6MQQEocJ=w400',
       bio: 'Defends traditional values and fiscal responsibility, advocating for strong defense, law and order, and limited government spending.',
-      website: 'https://example.com/carla'
+      link_url: 'https://example.com/carla',
+      link_text: 'Read More'
     },
     {
       id: 'candidate6',
-      name: 'Incoherent Ian',
-      party: 'Contradictory Coalition',
+      name: 'Ian Benson',
+      party: 'Independent',
       photo: 'https://lh3.googleusercontent.com/d/1a6L3PJXc-u8tMan-uPBP2S9PT-RcEskM=w400',
-      bio: 'Takes unpredictable positions across the political spectrum, somehow managing to contradict himself on most major issues.',
-      website: 'https://example.com/ian'
+      bio: 'Independent candidate focused on local issues and community engagement.',
+      link_url: 'https://example.com/ian',
+      link_text: 'Campaign Info'
     }
   ],
   questions: [

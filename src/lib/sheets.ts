@@ -6,7 +6,8 @@ export interface Candidate {
   party: string;
   photo: string;
   bio: string;
-  website: string;
+  link_url: string;
+  link_text?: string;
 }
 
 export interface Question {
@@ -90,7 +91,7 @@ function validateSheetData(tabletop: any): string | null {
   }
 
   // Validate Candidates sheet columns
-  const candidateColumns = ['id', 'name', 'party', 'photo', 'bio', 'website'];
+  const candidateColumns = ['id', 'name', 'party', 'photo', 'bio', 'link_url', 'link_text'];
   const candidateSample = tabletop.sheets('Candidates').all()[0] || {};
   for (const column of candidateColumns) {
     if (!(column in candidateSample)) {
