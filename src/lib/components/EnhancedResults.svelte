@@ -40,6 +40,12 @@
     return userAnswer ? userAnswer.value : 'No answer';
   }
   
+  // Get question by ID to access its type
+  function getQuestion(questionId: string) {
+    if (!quizData) return null;
+    return quizData.questions.find(q => q.id === questionId);
+  }
+  
   // Get candidate's actual answer for a question
   function getCandidateAnswer(candidateId: string, questionId: string) {
     if (!quizData) return 'No data';
@@ -55,7 +61,10 @@
       return 'Did not answer';
     }
     
-    if (questionType === 'agree_5' && typeof answer === 'number') {
+    // Convert string numbers to actual numbers for formatting
+    const numAnswer = typeof answer === 'string' ? parseInt(answer, 10) : answer;
+    
+    if (questionType === 'agree_5' && !isNaN(numAnswer)) {
       const labels = {
         1: 'Strongly Disagree',
         2: 'Somewhat Disagree', 
@@ -63,16 +72,16 @@
         4: 'Somewhat Agree',
         5: 'Strongly Agree'
       };
-      return labels[answer as keyof typeof labels] || answer.toString();
+      return labels[numAnswer as keyof typeof labels] || answer.toString();
     }
     
-    if (questionType === 'support_3' && typeof answer === 'number') {
+    if (questionType === 'support_3' && !isNaN(numAnswer)) {
       const labels = {
         1: 'Oppose',
         2: 'Neutral', 
         3: 'Strong Support'
       };
-      return labels[answer as keyof typeof labels] || answer.toString();
+      return labels[numAnswer as keyof typeof labels] || answer.toString();
     }
     
     return answer.toString();
