@@ -33,7 +33,7 @@
   }
 
   function isOptionSelected(option: string): boolean {
-    return localSelectedOptions.includes(option);
+    return localSelectedOptions?.includes(option) || false;
   }
 </script>
 

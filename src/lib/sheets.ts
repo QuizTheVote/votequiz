@@ -277,10 +277,17 @@ export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDat
     quizDataRows.forEach((row, index) => {
       console.log(`Processing row ${index + 1}:`, row);
       
+      // Skip rows with empty question text
+      const questionText = row.Question || '';
+      if (!questionText.trim()) {
+        console.warn(`⚠️ Skipping row ${index + 1}: Empty question text`);
+        return; // Skip this row entirely
+      }
+      
       // Create question
       const question: QuestionSVO = {
         id: `q${index + 1}`,
-        text: row.Question || '',
+        text: questionText,
         topic: row.Topic || '',
         explanation: row.Explanation || '',
         type: row.Type || 'agree_5',
