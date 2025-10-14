@@ -86,14 +86,8 @@
   });
 
   function startQuiz() {
-    // In SVO mode, skip to first active question
-    if (useSVOMode) {
-      const svoData = quizData as QuizDataSVO;
-      const firstActiveIndex = svoData?.questions.findIndex(q => q.active) ?? 0;
-      currentQuestionIndex = firstActiveIndex >= 0 ? firstActiveIndex : 0;
-    } else {
-      currentQuestionIndex = 0;
-    }
+    // Start with the first active question (index 0 in activeQuestions array)
+    currentQuestionIndex = 0;
   }
 
   function answerQuestion(questionId: string, value: number | string) {
@@ -106,47 +100,28 @@
       userAnswers = [...userAnswers, { questionId, value }];
     }
     
-    // Move to next question
-    if (useSVOMode) {
-      // In SVO mode, only navigate through active questions
-      const svoData = quizData as QuizDataSVO;
-      const currentActiveIndex = svoData?.questions.filter(q => q.active).findIndex(q => q.id === questionId) ?? -1;
-      const totalActiveQuestions = svoData?.questions.filter(q => q.active).length ?? 0;
-      
-      if (currentActiveIndex < totalActiveQuestions - 1) {
-        // Find next active question
-        const allQuestions = svoData?.questions ?? [];
-        const nextActiveQuestion = allQuestions.filter(q => q.active)[currentActiveIndex + 1];
-        const nextIndex = allQuestions.findIndex(q => q.id === nextActiveQuestion?.id);
-        currentQuestionIndex = nextIndex >= 0 ? nextIndex : currentQuestionIndex + 1;
-      } else {
-        // Go to topic importance ranking screen
-        currentQuestionIndex = (quizData?.questions.length || 0);
-      }
+    // Move to next active question
+    if (currentQuestionIndex < activeQuestions.length - 1) {
+      currentQuestionIndex++;
     } else {
-      // Regular mode: navigate through all questions
-      if (currentQuestionIndex < (quizData?.questions.length || 0) - 1) {
-        currentQuestionIndex++;
-      } else {
-        // Go to topic importance ranking screen
-        currentQuestionIndex = quizData?.questions.length || 0;
-      }
+      // Go to topic importance ranking screen
+      currentQuestionIndex = activeQuestions.length;
     }
   }
 
   function goBack() {
-    if (currentQuestionIndex > 0 && currentQuestionIndex < (quizData?.questions.length || 0)) {
-      // Go back to previous question
+    if (currentQuestionIndex > 0 && currentQuestionIndex < activeQuestions.length) {
+      // Go back to previous active question
       currentQuestionIndex--;
     } else if (currentQuestionIndex === 0) {
       // Go back to welcome screen
       currentQuestionIndex = -1;
-    } else if (currentQuestionIndex === (quizData?.questions.length || 0)) {
-      // Go back to last question from topic ranking
-      currentQuestionIndex = (quizData?.questions.length || 0) - 1;
-    } else if (currentQuestionIndex === (quizData?.questions.length || 0) + 1) {
+    } else if (currentQuestionIndex === activeQuestions.length) {
+      // Go back to last active question from topic ranking
+      currentQuestionIndex = Math.max(0, activeQuestions.length - 1);
+    } else if (currentQuestionIndex === activeQuestions.length + 1) {
       // Go back to topic ranking from results
-      currentQuestionIndex = quizData?.questions.length || 0;
+      currentQuestionIndex = activeQuestions.length;
     }
   }
 
@@ -225,18 +200,21 @@
     }
   }
 
-  $: currentQuestion = quizData?.questions[currentQuestionIndex];
-  $: currentAnswer = currentQuestion 
-    ? userAnswers.find(a => a.questionId === currentQuestion.id)?.value 
-    : null;
-  $: showTopicRanking = quizData && currentQuestionIndex === (quizData.questions.length || 0);
-  $: showResults = quizData && currentQuestionIndex === (quizData.questions.length + 1);
-  
-  // Type-safe access to SVO questions
-  $: currentSVOQuestion = (useSVOMode && currentQuestion) ? currentQuestion as QuestionSVO : null;
+  // Get only active questions for display
   $: activeQuestions = useSVOMode 
     ? (quizData as QuizDataSVO)?.questions.filter(q => q.active) || []
     : quizData?.questions || [];
+    
+  // Use active questions for current question (not full question array)
+  $: currentQuestion = activeQuestions[currentQuestionIndex];
+  $: currentAnswer = currentQuestion 
+    ? userAnswers.find(a => a.questionId === currentQuestion.id)?.value 
+    : null;
+  $: showTopicRanking = quizData && currentQuestionIndex === activeQuestions.length;
+  $: showResults = quizData && currentQuestionIndex === activeQuestions.length + 1;
+  
+  // Type-safe access to SVO questions
+  $: currentSVOQuestion = (useSVOMode && currentQuestion) ? currentQuestion as QuestionSVO : null;
   
   // Initialize topic weights when topics first become available
   $: if (quizData?.topics && quizData.topics.length > 0 && userTopicWeights.length === 0) {
@@ -465,20 +443,11 @@
         <div class="w-full bg-gray-200 rounded-full h-2.5">
           <div 
             class="bg-blue-600 h-2.5 rounded-full" 
-            style="width: {useSVOMode 
-              ? (((activeQuestions.filter(q => (q as QuestionSVO).active).findIndex(q => q.id === currentQuestion?.id) + 1) / ((activeQuestions.filter(q => (q as QuestionSVO).active).length || 1) + 2)) * 100)
-              : (((currentQuestionIndex + 1) / ((quizData?.questions.length || 1) + 2)) * 100)
-            }%"
+            style="width: {((currentQuestionIndex + 1) / (activeQuestions.length + 2)) * 100}%"
           ></div>
         </div>
         <p class="text-right text-sm mt-1">
-          Step 1 of 3: Question {useSVOMode 
-            ? (activeQuestions.filter(q => (q as QuestionSVO).active).findIndex(q => q.id === currentQuestion?.id) + 1)
-            : (currentQuestionIndex + 1)
-          } of {useSVOMode 
-            ? activeQuestions.filter(q => (q as QuestionSVO).active).length
-            : quizData?.questions.length
-          }
+          Step 1 of 3: Question {currentQuestionIndex + 1} of {activeQuestions.length}
         </p>
       </div>
       
