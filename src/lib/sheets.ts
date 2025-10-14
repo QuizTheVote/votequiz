@@ -273,6 +273,7 @@ export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDat
     // Parse questions from Quiz_Data
     const questions: QuestionSVO[] = [];
     const candidateAnswers: CandidateAnswerSVO[] = [];
+    let questionCounter = 1; // Track valid questions for ID generation
     
     quizDataRows.forEach((row, index) => {
       console.log(`Processing row ${index + 1}:`, row);
@@ -284,9 +285,9 @@ export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDat
         return; // Skip this row entirely
       }
       
-      // Create question
+      // Create question with sequential ID for valid questions only
       const question: QuestionSVO = {
-        id: `q${index + 1}`,
+        id: `q${questionCounter}`,
         text: questionText,
         topic: row.Topic || '',
         explanation: row.Explanation || '',
@@ -304,6 +305,9 @@ export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDat
       
       console.log('Created question:', question);
       questions.push(question);
+      
+      // Increment counter for next valid question
+      questionCounter++;
 
       // Extract candidate answers from the same row
       candidates.forEach(candidate => {
