@@ -251,10 +251,10 @@ export function calculateQuestionSimilarity(
       return userAnswer === candidateAnswer ? 1.0 : 0.0;
 
     case 'multiple_choice':
-      // Multiple choice: use Jaccard similarity
+      // Multiple choice: use Jaccard similarity with pipe delimiter
       if (typeof userAnswer === 'string' && typeof candidateAnswer === 'string') {
-        const userSelections = userAnswer.split(',').map(s => s.trim()).filter(s => s.length > 0);
-        const candidateSelections = candidateAnswer.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        const userSelections = userAnswer.split('|').map(s => s.trim()).filter(s => s.length > 0);
+        const candidateSelections = candidateAnswer.split('|').map(s => s.trim()).filter(s => s.length > 0);
         return jaccardSimilarity(userSelections, candidateSelections);
       }
       return 0;

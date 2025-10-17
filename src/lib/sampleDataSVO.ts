@@ -175,7 +175,7 @@ export const sampleDataSVO: QuizDataSVO = {
     { candidateId: 'candidate1', questionId: 'svo_q5', value: 'Ensure equal outcomes for all students' },
     { candidateId: 'candidate1', questionId: 'svo_q6', value: 3 }, // Neutral on business development
     { candidateId: 'candidate1', questionId: 'svo_q7', value: 'Reducing inequality' },
-    { candidateId: 'candidate1', questionId: 'svo_q8', value: 'Ensuring equal access to services,Building community solidarity' },
+    { candidateId: 'candidate1', questionId: 'svo_q8', value: 'Ensuring equal access to services|Building community solidarity' },
     { candidateId: 'candidate1', questionId: 'svo_q9', value: 3 }, // More support
     { candidateId: 'candidate1', questionId: 'svo_q10', value: 'Collective goals' },
 
@@ -187,7 +187,7 @@ export const sampleDataSVO: QuizDataSVO = {
     { candidateId: 'candidate2', questionId: 'svo_q5', value: 'Provide equal opportunities with varied outcomes' },
     { candidateId: 'candidate2', questionId: 'svo_q6', value: 4 }, // Mostly supports business development
     { candidateId: 'candidate2', questionId: 'svo_q7', value: 'Reducing inequality' },
-    { candidateId: 'candidate2', questionId: 'svo_q8', value: 'Ensuring equal access to services,Protecting individual rights' },
+    { candidateId: 'candidate2', questionId: 'svo_q8', value: 'Ensuring equal access to services|Protecting individual rights' },
     { candidateId: 'candidate2', questionId: 'svo_q9', value: 3 }, // More support
     { candidateId: 'candidate2', questionId: 'svo_q10', value: 'Collective goals' },
 
@@ -199,7 +199,7 @@ export const sampleDataSVO: QuizDataSVO = {
     { candidateId: 'candidate3', questionId: 'svo_q5', value: 'Provide equal opportunities with varied outcomes' },
     { candidateId: 'candidate3', questionId: 'svo_q6', value: 4 }, // Supports business development
     { candidateId: 'candidate3', questionId: 'svo_q7', value: 'Promoting individual achievement' },
-    { candidateId: 'candidate3', questionId: 'svo_q8', value: 'Protecting individual rights,Promoting economic competition' },
+    { candidateId: 'candidate3', questionId: 'svo_q8', value: 'Protecting individual rights|Promoting economic competition' },
     { candidateId: 'candidate3', questionId: 'svo_q9', value: 2 }, // Same level of support
     { candidateId: 'candidate3', questionId: 'svo_q10', value: 'Individual success' },
 
@@ -211,7 +211,7 @@ export const sampleDataSVO: QuizDataSVO = {
     { candidateId: 'candidate4', questionId: 'svo_q5', value: 'Reward excellence and create competitive advantage' },
     { candidateId: 'candidate4', questionId: 'svo_q6', value: 5 }, // Strongly supports business development
     { candidateId: 'candidate4', questionId: 'svo_q7', value: 'Promoting individual achievement' },
-    { candidateId: 'candidate4', questionId: 'svo_q8', value: 'Protecting individual rights,Supporting personal responsibility' },
+    { candidateId: 'candidate4', questionId: 'svo_q8', value: 'Protecting individual rights|Supporting personal responsibility' },
     { candidateId: 'candidate4', questionId: 'svo_q9', value: 1 }, // Less support
     { candidateId: 'candidate4', questionId: 'svo_q10', value: 'Individual success' },
 
@@ -223,7 +223,7 @@ export const sampleDataSVO: QuizDataSVO = {
     { candidateId: 'candidate5', questionId: 'svo_q5', value: 'Reward excellence and create competitive advantage' },
     { candidateId: 'candidate5', questionId: 'svo_q6', value: 5 }, // Strongly supports business development
     { candidateId: 'candidate5', questionId: 'svo_q7', value: 'Promoting individual achievement' },
-    { candidateId: 'candidate5', questionId: 'svo_q8', value: 'Promoting economic competition,Supporting personal responsibility' },
+    { candidateId: 'candidate5', questionId: 'svo_q8', value: 'Promoting economic competition|Supporting personal responsibility' },
     { candidateId: 'candidate5', questionId: 'svo_q9', value: 1 }, // Less support
     { candidateId: 'candidate5', questionId: 'svo_q10', value: 'Individual success' },
 
@@ -235,7 +235,7 @@ export const sampleDataSVO: QuizDataSVO = {
     { candidateId: 'candidate6', questionId: 'svo_q5', value: 'Reward excellence and create competitive advantage' }, // Competitive again
     { candidateId: 'candidate6', questionId: 'svo_q6', value: 2 }, // Disagrees with business development despite competitive stance
     { candidateId: 'candidate6', questionId: 'svo_q7', value: 'Reducing inequality' }, // Contradicts Q5
-    { candidateId: 'candidate6', questionId: 'svo_q8', value: 'Ensuring equal access to services,Promoting economic competition,Supporting personal responsibility' }, // Contradictory mix
+    { candidateId: 'candidate6', questionId: 'svo_q8', value: 'Ensuring equal access to services|Promoting economic competition|Supporting personal responsibility' }, // Contradictory mix
     { candidateId: 'candidate6', questionId: 'svo_q9', value: 3 }, // More support but contradicts Q2
     { candidateId: 'candidate6', questionId: 'svo_q10', value: 'Collective goals' } // Contradicts most other answers
   ],

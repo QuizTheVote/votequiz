@@ -5,9 +5,9 @@
   export let currentAnswer: number | string | null = null;
   export let onAnswer: (questionId: string, value: number | string) => void;
 
-  // Convert current answer to array of selected options
+  // Convert current answer to array of selected options (pipe-delimited)
   $: selectedOptions = currentAnswer 
-    ? (typeof currentAnswer === 'string' ? currentAnswer.split(',').map(s => s.trim()) : [])
+    ? (typeof currentAnswer === 'string' ? currentAnswer.split('|').map(s => s.trim()) : [])
     : [];
 
   // For multiple choice questions, we use the options array from the question
@@ -27,8 +27,8 @@
   }
 
   function submitAnswer() {
-    // Convert to comma-separated string and submit
-    const answerValue = (localSelectedOptions?.length || 0) > 0 ? localSelectedOptions?.join(',') || '' : '';
+    // Convert to pipe-separated string and submit
+    const answerValue = (localSelectedOptions?.length || 0) > 0 ? localSelectedOptions?.join('|') || '' : '';
     onAnswer(question.id, answerValue);
   }
 
