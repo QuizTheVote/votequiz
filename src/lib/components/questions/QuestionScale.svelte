@@ -27,7 +27,32 @@
     }
   }
 
-  $: scaleOptions = getScaleOptions(question.type);
+  // Use custom labels from Option columns if provided, otherwise use defaults
+  $: scaleOptions = (() => {
+    // Check if custom options are provided
+    if (question.options && question.options.length > 0) {
+      if (question.type === 'agree_5' && question.options.length >= 5) {
+        // Map Option1-5 to values 5-1 (Option1 = Strongly Agree = 5)
+        return [
+          { value: 5, label: question.options[0] },
+          { value: 4, label: question.options[1] },
+          { value: 3, label: question.options[2] },
+          { value: 2, label: question.options[3] },
+          { value: 1, label: question.options[4] }
+        ];
+      }
+      if (question.type === 'support_3' && question.options.length >= 3) {
+        // Map Option1-3 to values 3-1 (Option1 = More Support = 3)
+        return [
+          { value: 3, label: question.options[0] },
+          { value: 2, label: question.options[1] },
+          { value: 1, label: question.options[2] }
+        ];
+      }
+    }
+    // Fall back to standard labels
+    return getScaleOptions(question.type);
+  })();
 </script>
 
 <div class="mb-10 p-6 bg-white rounded-lg shadow-md">
