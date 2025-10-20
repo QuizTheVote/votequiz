@@ -231,15 +231,23 @@ export function calculateQuestionSimilarity(
   switch (questionType) {
     case 'agree_5':
       // 5-point scale: calculate normalized distance
-      if (typeof userAnswer === 'number' && typeof candidateAnswer === 'number') {
-        return 1 - Math.abs(userAnswer - candidateAnswer) / 4; // 4 is max distance (5-1)
+      // Convert to numbers if they're numeric strings
+      const userNum5 = typeof userAnswer === 'number' ? userAnswer : parseFloat(String(userAnswer));
+      const candNum5 = typeof candidateAnswer === 'number' ? candidateAnswer : parseFloat(String(candidateAnswer));
+      
+      if (!isNaN(userNum5) && !isNaN(candNum5)) {
+        return 1 - Math.abs(userNum5 - candNum5) / 4; // 4 is max distance (5-1)
       }
       return 0;
 
     case 'support_3':
       // 3-point scale: calculate normalized distance
-      if (typeof userAnswer === 'number' && typeof candidateAnswer === 'number') {
-        return 1 - Math.abs(userAnswer - candidateAnswer) / 2; // 2 is max distance (3-1)
+      // Convert to numbers if they're numeric strings
+      const userNum3 = typeof userAnswer === 'number' ? userAnswer : parseFloat(String(userAnswer));
+      const candNum3 = typeof candidateAnswer === 'number' ? candidateAnswer : parseFloat(String(candidateAnswer));
+      
+      if (!isNaN(userNum3) && !isNaN(candNum3)) {
+        return 1 - Math.abs(userNum3 - candNum3) / 2; // 2 is max distance (3-1)
       }
       return 0;
 
