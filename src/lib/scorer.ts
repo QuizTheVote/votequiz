@@ -231,7 +231,7 @@ export function calculateQuestionSimilarity(
 ): number {
   switch (questionType) {
     case 'agree_5':
-      // 5-point scale: calculate normalized distance
+      // 5-point scale: graduated matching with neutral boundary
       // Convert text answers to numbers using custom options if available
       let userNum5 = typeof userAnswer === 'number' ? userAnswer : parseFloat(String(userAnswer));
       let candNum5 = typeof candidateAnswer === 'number' ? candidateAnswer : parseFloat(String(candidateAnswer));
@@ -252,12 +252,28 @@ export function calculateQuestionSimilarity(
       }
       
       if (!isNaN(userNum5) && !isNaN(candNum5)) {
-        return 1 - Math.abs(userNum5 - candNum5) / 4; // 4 is max distance (5-1)
+        const distance = Math.abs(userNum5 - candNum5);
+        
+        // Perfect match
+        if (distance === 0) return 1.0;
+        
+        // Adjacent strong values only (not crossing neutral)
+        if (distance === 1) {
+          // Both on agree side (4,5)
+          if (userNum5 >= 4 && candNum5 >= 4) return 0.5;
+          // Both on disagree side (1,2)
+          if (userNum5 <= 2 && candNum5 <= 2) return 0.5;
+          // Crossing neutral boundary (2↔3 or 3↔4)
+          return 0;
+        }
+        
+        // Distance 2+: no match
+        return 0;
       }
       return 0;
 
     case 'support_3':
-      // 3-point scale: calculate normalized distance
+      // 3-point scale: asymmetric graduated matching
       // Convert text answers to numbers using custom options if available
       let userNum3 = typeof userAnswer === 'number' ? userAnswer : parseFloat(String(userAnswer));
       let candNum3 = typeof candidateAnswer === 'number' ? candidateAnswer : parseFloat(String(candidateAnswer));
@@ -278,7 +294,21 @@ export function calculateQuestionSimilarity(
       }
       
       if (!isNaN(userNum3) && !isNaN(candNum3)) {
-        return 1 - Math.abs(userNum3 - candNum3) / 2; // 2 is max distance (3-1)
+        const distance = Math.abs(userNum3 - candNum3);
+        
+        // Perfect match
+        if (distance === 0) return 1.0;
+        
+        // Asymmetric partial credit: only when candidate is extreme (1 or 3) and user is neutral (2)
+        if (distance === 1) {
+          // Candidate extreme (Support=3 or Oppose=1), User neutral (2)
+          if ((candNum3 === 3 || candNum3 === 1) && userNum3 === 2) return 0.25;
+          // All other adjacent combinations: no match
+          return 0;
+        }
+        
+        // Opposite (1↔3): no match
+        return 0;
       }
       return 0;
 
