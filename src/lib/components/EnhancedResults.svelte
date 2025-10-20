@@ -223,8 +223,12 @@
                           {@const candidateAnswer = getCandidateAnswer(candidate.id, question.id)}
                           {@const formattedUserAnswer = formatAnswer(userAnswer, question.type)}
                           {@const formattedCandidateAnswer = formatAnswer(candidateAnswer, question.type)}
-                          {@const isMatch = userAnswer === candidateAnswer}
                           {@const isNoAnswer = candidateAnswer === 'Did not answer'}
+                          {@const isMatch = !isNoAnswer && (
+                            (question.type === 'agree_5' || question.type === 'support_3') 
+                              ? String(userAnswer) === String(candidateAnswer)
+                              : userAnswer === candidateAnswer
+                          )}
                           
                           <div class="p-3 rounded-lg border border-gray-300" style="{
                             isNoAnswer ? 'background-color: rgba(251, 191, 36, 0.05);' :
