@@ -226,14 +226,30 @@ export function jaccardSimilarity(userSelections: string[], candidateSelections:
 export function calculateQuestionSimilarity(
   userAnswer: number | string,
   candidateAnswer: number | string,
-  questionType: string
+  questionType: string,
+  questionOptions?: string[]
 ): number {
   switch (questionType) {
     case 'agree_5':
       // 5-point scale: calculate normalized distance
-      // Convert to numbers if they're numeric strings
-      const userNum5 = typeof userAnswer === 'number' ? userAnswer : parseFloat(String(userAnswer));
-      const candNum5 = typeof candidateAnswer === 'number' ? candidateAnswer : parseFloat(String(candidateAnswer));
+      // Convert text answers to numbers using custom options if available
+      let userNum5 = typeof userAnswer === 'number' ? userAnswer : parseFloat(String(userAnswer));
+      let candNum5 = typeof candidateAnswer === 'number' ? candidateAnswer : parseFloat(String(candidateAnswer));
+      
+      // If parseFloat failed and we have custom options, try reverse mapping
+      if (isNaN(candNum5) && questionOptions && questionOptions.length >= 5) {
+        const index = questionOptions.findIndex(opt => opt === String(candidateAnswer));
+        if (index >= 0) {
+          candNum5 = 5 - index; // Option1 = 5, Option5 = 1
+        }
+      }
+      
+      if (isNaN(userNum5) && questionOptions && questionOptions.length >= 5) {
+        const index = questionOptions.findIndex(opt => opt === String(userAnswer));
+        if (index >= 0) {
+          userNum5 = 5 - index;
+        }
+      }
       
       if (!isNaN(userNum5) && !isNaN(candNum5)) {
         return 1 - Math.abs(userNum5 - candNum5) / 4; // 4 is max distance (5-1)
@@ -242,9 +258,24 @@ export function calculateQuestionSimilarity(
 
     case 'support_3':
       // 3-point scale: calculate normalized distance
-      // Convert to numbers if they're numeric strings
-      const userNum3 = typeof userAnswer === 'number' ? userAnswer : parseFloat(String(userAnswer));
-      const candNum3 = typeof candidateAnswer === 'number' ? candidateAnswer : parseFloat(String(candidateAnswer));
+      // Convert text answers to numbers using custom options if available
+      let userNum3 = typeof userAnswer === 'number' ? userAnswer : parseFloat(String(userAnswer));
+      let candNum3 = typeof candidateAnswer === 'number' ? candidateAnswer : parseFloat(String(candidateAnswer));
+      
+      // If parseFloat failed and we have custom options, try reverse mapping
+      if (isNaN(candNum3) && questionOptions && questionOptions.length >= 3) {
+        const index = questionOptions.findIndex(opt => opt === String(candidateAnswer));
+        if (index >= 0) {
+          candNum3 = 3 - index; // Option1 = 3, Option3 = 1
+        }
+      }
+      
+      if (isNaN(userNum3) && questionOptions && questionOptions.length >= 3) {
+        const index = questionOptions.findIndex(opt => opt === String(userAnswer));
+        if (index >= 0) {
+          userNum3 = 3 - index;
+        }
+      }
       
       if (!isNaN(userNum3) && !isNaN(candNum3)) {
         return 1 - Math.abs(userNum3 - candNum3) / 2; // 2 is max distance (3-1)
@@ -312,7 +343,8 @@ export function calculateSVOMatches(
         const similarity = calculateQuestionSimilarity(
           userAnswer.value,
           candidateAnswer.value,
-          question.type
+          question.type,
+          question.options
         );
         totalSimilarity += similarity;
         questionCount++;
@@ -408,7 +440,8 @@ export function calculateWeightedSVOMatches(
         const similarity = calculateQuestionSimilarity(
           userAnswer.value,
           candidateAnswer.value,
-          question.type
+          question.type,
+          question.options
         );
         
         const topicId = question.topic;
