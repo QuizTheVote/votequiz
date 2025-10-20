@@ -56,7 +56,7 @@
   }
   
   // Convert numeric answers to human-readable labels
-  function formatAnswer(answer: string | number, questionType: string): string {
+  function formatAnswer(answer: string | number, questionType: string, question?: any): string {
     if (answer === 'Did not answer' || answer === 'No answer' || answer === 'No data') {
       return 'Did not answer';
     }
@@ -65,6 +65,13 @@
     const numAnswer = typeof answer === 'string' ? parseInt(answer, 10) : answer;
     
     if (questionType === 'agree_5' && !isNaN(numAnswer)) {
+      // Use custom labels from question options if available
+      if (question?.options && question.options.length >= 5) {
+        const index = 5 - numAnswer; // Option1 = value 5, Option5 = value 1
+        return question.options[index] || answer.toString();
+      }
+      
+      // Fall back to standard labels
       const labels = {
         1: 'Strongly Disagree',
         2: 'Somewhat Disagree', 
@@ -76,6 +83,13 @@
     }
     
     if (questionType === 'support_3' && !isNaN(numAnswer)) {
+      // Use custom labels from question options if available
+      if (question?.options && question.options.length >= 3) {
+        const index = 3 - numAnswer; // Option1 = value 3, Option3 = value 1
+        return question.options[index] || answer.toString();
+      }
+      
+      // Fall back to standard labels
       const labels = {
         1: 'Less Support',
         2: 'Same Level', 
@@ -221,8 +235,8 @@
                         {#each getTopicQuestions(topicMatch.topicId) as question}
                           {@const userAnswer = getUserAnswer(question.id)}
                           {@const candidateAnswer = getCandidateAnswer(candidate.id, question.id)}
-                          {@const formattedUserAnswer = formatAnswer(userAnswer, question.type)}
-                          {@const formattedCandidateAnswer = formatAnswer(candidateAnswer, question.type)}
+                          {@const formattedUserAnswer = formatAnswer(userAnswer, question.type, question)}
+                          {@const formattedCandidateAnswer = formatAnswer(candidateAnswer, question.type, question)}
                           {@const isNoAnswer = candidateAnswer === 'Did not answer'}
                           {@const isMatch = !isNoAnswer && (
                             (question.type === 'agree_5' || question.type === 'support_3') 
