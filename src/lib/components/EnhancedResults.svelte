@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Candidate, QuizData, QuizDataSVO } from '$lib/sheets';
   import type { UserAnswer, UserAnswerSVO } from '$lib/scorer';
+  import { calculateQuestionSimilarity } from '$lib/scorer';
   
   export let candidates: Array<Candidate & { 
     matchPercentage: number, 
@@ -238,20 +239,27 @@
                           {@const formattedUserAnswer = formatAnswer(userAnswer, question.type, question)}
                           {@const formattedCandidateAnswer = formatAnswer(candidateAnswer, question.type, question)}
                           {@const isNoAnswer = candidateAnswer === 'Did not answer'}
-                          {@const isMatch = !isNoAnswer && formattedUserAnswer === formattedCandidateAnswer}
+                          {@const similarityScore = !isNoAnswer ? calculateQuestionSimilarity(userAnswer, candidateAnswer, question.type, question.options) : 0}
+                          {@const matchPercent = Math.round(similarityScore * 100)}
                           
                           <div class="p-3 rounded-lg border border-gray-300" style="{
-                            isNoAnswer ? 'background-color: rgba(251, 191, 36, 0.05);' :
-                            isMatch ? 'background-color: rgba(34, 197, 94, 0.05);' : 
+                            isNoAnswer ? 'background-color: rgba(156, 163, 175, 0.05);' :
+                            matchPercent === 100 ? 'background-color: rgba(34, 197, 94, 0.05);' :
+                            matchPercent > 0 ? 'background-color: rgba(251, 146, 60, 0.05);' :
                             'background-color: rgba(239, 68, 68, 0.05);'
                           }">
                             <!-- Match/Mismatch/No Answer Header -->
                             <div class="flex items-center mb-2">
                               <span class="text-sm font-bold {
-                                isNoAnswer ? 'text-yellow-700' :
-                                isMatch ? 'text-green-700' : 'text-red-700'
+                                isNoAnswer ? 'text-gray-600' :
+                                matchPercent === 100 ? 'text-green-700' :
+                                matchPercent > 0 ? 'text-orange-600' :
+                                'text-red-700'
                               }">
-                                {isNoAnswer ? '⚠ NO CANDIDATE ANSWER PROVIDED' : isMatch ? '✓ MATCH' : '✗ DIFFERENT'}
+                                {isNoAnswer ? '⚠ NO CANDIDATE ANSWER PROVIDED' :
+                                 matchPercent === 100 ? '✓ MATCH (100%)' :
+                                 matchPercent > 0 ? `◐ PARTIAL MATCH (${matchPercent}%)` :
+                                 '✗ DIFFERENT (0%)'}
                               </span>
                             </div>
                             
