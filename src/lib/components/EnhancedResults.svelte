@@ -273,8 +273,10 @@
                               </p>
                               <p class="text-xs text-gray-600">
                                 {candidate.name}: <span class="font-medium {
-                                  isNoAnswer ? 'text-yellow-600' :
-                                  isMatch ? 'text-green-700' : 'text-red-600'
+                                  isNoAnswer ? 'text-gray-600' :
+                                  matchPercent === 100 ? 'text-green-700' :
+                                  matchPercent > 0 ? 'text-orange-600' :
+                                  'text-red-600'
                                 }">{formattedCandidateAnswer}</span>
                               </p>
                             </div>
