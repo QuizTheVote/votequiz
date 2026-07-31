@@ -232,10 +232,12 @@ screen readers and any tooling that looks for the main landmark.
 - **Three `svelte-check` warnings remain**: a drag handler without an ARIA role
   in `TopicImportanceRanker.svelte`, an unassociated form label in
   `newsroom/+page.svelte`, and the `@apply` at-rule, which is a false positive.
-- **The `elex-quiz-app/` directory** at the workspace root is an untouched
-  `npx sv create` scaffold, still serving "Welcome to SvelteKit". It is not in
-  any git repository, so deleting it cannot be undone from history. Awaiting a
-  decision.
+- **The `elex-quiz-app/` directory** at the workspace root was an untouched
+  `npx sv create` scaffold from 2025-05-16, still serving "Welcome to SvelteKit",
+  and was never in any git repository. Removed 2026-07-31. Its 18 real files are
+  archived alongside the project at `unused-sveltekit-scaffold-2026-07-31.zip`
+  (15 KB, excludes `node_modules`). It was worth removing because its name looked
+  more like the main app than `elex-quiz-app-tailwind/` does.
 
 ## Not tracked in version control
 
