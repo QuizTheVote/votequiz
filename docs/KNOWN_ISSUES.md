@@ -94,6 +94,39 @@ that as an error rather than rendering an empty quiz.
 
 ## Open
 
+### 13. The homepage demo sheet is misconfigured
+
+Sheet `1Y2BprkPQC_9RNwZGQLPo5kLWS5lGqAyKFBOOJMJCeFA` is the quiz every
+prospective newsroom tries. Re-verified against the live CSV on 2026-07-31:
+
+- Its `Candidates` tab header is `id, name, party, photo, bio, website`. There is
+  no `link_url`, so no candidate link renders anywhere in the results. This is
+  the sheet-side half of issue 4; the code half is fixed.
+- Its `Topics` tab declares five ids (`economy`, `healthcare`, `environment`,
+  `education`, `general`) but its active questions use only three. Voters rank
+  Environment and Education on the ranking screen and that ranking is discarded.
+- `Quiz_Data` row 3 reads "parks and recretation services".
+
+All three are spreadsheet edits, no code involved. Rename `website` to
+`link_url`, optionally add a `link_text` column for the label, fix the typo, and
+resolve the topic mismatch either by adding Environment and Education questions
+or by deleting those two rows from `Topics`.
+
+Deliberate consequence of the severity rule below: none of this is visible to a
+voter today, because none of it changes the match percentages. Append
+`&debug=true` to the demo URL to see all three reported.
+
+### A note on diagnostic severity
+
+`error` is reserved for "the voter's matches will be wrong or missing" because
+errors render publicly, above the quiz. Everything the sheet owner should fix but
+that leaves scoring correct is a `notice`, visible only under `?debug=true`.
+
+The legacy `website` column was briefly an error. Verified against the real demo
+sheet that this put a banner reading "This quiz has a spreadsheet problem that
+affects its results" on the homepage demo, which overstated a missing hyperlink
+and would have greeted every prospective newsroom. It is now a notice.
+
 ### 6. The WordPress embed builder prefers the wrong Google Sheets URL form
 
 Found while verifying U7. The generator on `quizthevote.com/build-your-quiz/`

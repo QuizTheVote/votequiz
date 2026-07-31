@@ -135,14 +135,32 @@ the publish step can be removed from every instruction document. This matters
 because publishing is the step most likely to lose a non-technical user, and it
 is also what triggers the U7 bug.
 
-### U4. How stale is the CSV feed? — OPEN
+### U4. How stale is the CSV feed? — PARTIALLY RESOLVED
 
-Google caches these responses. The delay between editing a sheet and the quiz
-reflecting it is unmeasured, and newsrooms will hit it on deadline.
+The app fetches from exactly one endpoint (`src/lib/sheets.ts:116`):
 
-To close: change one cell at a known time, then poll
-`https://docs.google.com/spreadsheets/d/<id>/gviz/tq?tqx=out:csv&sheet=Quiz_Data`
-until the value changes, and record the elapsed time.
+```
+https://docs.google.com/spreadsheets/d/<id>/gviz/tq?tqx=out:csv&sheet=<tab>
+```
+
+Fetched its headers on 2026-07-31 against `1Y2Bprk...`:
+
+```
+cache-control: no-cache, no-store, max-age=0, must-revalidate
+pragma: no-cache
+expires: Mon, 01 Jan 1990 00:00:00 GMT
+```
+
+Google explicitly forbids caching this response, and returns no `age` or `etag`.
+So there is no HTTP-level staleness: a browser reload should always fetch afresh.
+The expected answer to "how long until my edit shows up" is therefore
+"immediately, on reload", not the multi-minute delay that the published-to-web
+`/pub?output=csv` endpoint is known for. The app does not use `/pub`.
+
+Still unconfirmed: whether Google applies internal propagation delay upstream of
+the cache headers. To close, change one cell at a known time and poll the URL
+above until the value changes. Worth doing once, because the answer goes into
+newsroom-facing instructions and deadline behaviour depends on it.
 
 ### U5. Does the candidate survey flow work end to end? — OPEN
 
@@ -182,3 +200,73 @@ rename removes the candidate link with no warning, an unused topic id lets
 voters rank something that has no effect, and an unmatched candidate name yields
 a zero score. The rest need confirming before the Phase D validation is written,
 so that it covers real failures rather than imagined ones.
+
+Note: Phase D validation shipped ahead of this inventory, covering the three
+known cases plus missing columns. U11 remains open because the untested cases
+may need additional checks, not because the shipped ones are unverified.
+
+---
+
+## Handoff: what closing these needs from you
+
+Everything below needs a Google or WordPress login. Each item is ordered by
+value per minute spent. The single highest-value action is the scratch sheet in
+step 2, because it unblocks both U3 and U11.
+
+### 1. Export the installed Apps Script (closes U1, ~2 minutes)
+
+Open sheet `1B08mC5xl_crFRbNnOIKnPWvlSl1U9v_NDeLq73wa3o4` → Extensions → Apps
+Script. In the editor, select all of `Code.gs`, copy, and paste into a file at
+`apps-script/Code.installed.gs`. That is all — the diff is mechanical from there.
+If the editor shows more than one `.gs` file, export each one and say so.
+
+### 2. Make one scratch sheet, unpublished (closes U3, unblocks U11, ~3 minutes)
+
+On the builder page, click Copy Template. On the copy: Share → General access →
+"Anyone with the link", role Viewer. Do **not** touch File → Share → Publish to
+web. Paste the resulting sheet ID here.
+
+If the app loads it, the publish-to-web step can be deleted from every
+instruction document, which removes both the step most likely to lose a
+non-technical newsroom and the trigger for the issue 6 URL bug.
+
+### 3. Time one edit (closes U4, ~5 minutes of waiting)
+
+In any sheet you own, change one `Quiz_Data` question's text and note the clock
+time. Tell me the sheet ID, the cell, and the time. I will poll until it changes
+and record the real number.
+
+### 4. Run the candidate survey flow once (closes U5, ~10 minutes)
+
+On the scratch copy from step 2, run Quiz Tools → Generate Candidate Survey,
+open the Form it creates, submit one response as a fake candidate, then run Quiz
+Tools → Sync Survey Responses. Report whether the answers landed in the correct
+`Quiz_Data` column, and paste any error dialog verbatim.
+
+Worth knowing before you rely on it: `emailSurveyToCandidates` in `Code.gs` only
+displays a message template. It does not send mail.
+
+### 5. Export the WordPress snippets (closes U8, ~5 minutes)
+
+WP admin → the Headers and Footers plugin (docs mention `footer_code.txt` and
+`BuildYourQuiz_code.txt`). Copy each snippet into this repo under `wordpress/`.
+Until these are tracked, a WordPress edit can break embed generation for every
+newsroom with no history and nobody to notice.
+
+### 6. Answer from memory (closes U2 and U6, no clicking)
+
+Fill in the blanks. "Live" means a real audience can reach it today.
+
+| Spreadsheet ID | What it is for | Live or abandoned | Google account that owns it |
+| --- | --- | --- | --- |
+| `1B08mC5xl_crFRbNnOIKnPWvlSl1U9v_NDeLq73wa3o4` | Base template newsrooms copy | live | ? |
+| `1Y2BprkPQC_9RNwZGQLPo5kLWS5lGqAyKFBOOJMJCeFA` | Homepage demo | live | ? |
+| ? | ? | ? | ? |
+
+Also needed:
+
+- Are any real newsroom quizzes live right now? If yes, which sheets, on whose
+  site, and is an election imminent? This sets how cautiously anything deploys.
+- Did the survey generator ever create Google Forms that still exist?
+- `template/archive/` holds an "At-Large Copy" and a "fish election quiz",
+  which suggests at least two derived quizzes once existed. Do they still?

@@ -210,6 +210,10 @@ function diagnoseSheet(
   topics: Topic[]
 ): SheetDiagnostic[] {
   const diagnostics: SheetDiagnostic[] = [];
+  // Severity decides who sees it. Reserve error for "the voter's matches will be
+  // wrong or absent", because those surface to the public. Anything the sheet
+  // owner should fix but that leaves scoring correct is a notice, shown only
+  // under ?debug=true.
   const error = (message: string) => diagnostics.push({ severity: 'error', message });
   const notice = (message: string) => diagnostics.push({ severity: 'notice', message });
 
@@ -227,9 +231,10 @@ function diagnoseSheet(
   }
 
   // The template renamed website to link_url. A sheet copied before that change
-  // loses its candidate links with no other symptom.
+  // loses its candidate links with no other symptom. Scoring is unaffected, so
+  // this stays a notice.
   if (candidateSheet.headers.includes('website') && !candidateSheet.headers.includes('link_url')) {
-    error(
+    notice(
       'The Candidates tab still uses a "website" column. Rename it to "link_url" ' +
         '(and optionally add "link_text"), or candidate links will not appear.'
     );
