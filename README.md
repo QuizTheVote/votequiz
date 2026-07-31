@@ -45,6 +45,19 @@ Built with modern web technologies for reliability and performance:
 - **Deployment:** GitHub Pages (Static Site)
 - **Matching Algorithm:** Weighted cosine similarity with topic importance
 
+## Repository Layout
+
+| Path | Contents |
+| --- | --- |
+| `src/` | The SvelteKit quiz application |
+| `docs/` | Documentation — **start at [`docs/README.md`](docs/README.md)** |
+| `docs/archive/` | Superseded documents, kept for history. Do not trust for current behaviour. |
+| `apps-script/` | The Google Apps Script bound to the Base Template sheet |
+| `template/` | Snapshots of the Base Template spreadsheet |
+
+Known bugs and open work are tracked in
+[`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
+
 ## Support
 
 - **Website:** [QuizTheVote.com](https://www.quizthevote.com)
