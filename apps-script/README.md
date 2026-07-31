@@ -48,6 +48,42 @@ Worth doing once, since it has never been checked: open the script editor,
 copy its full contents, and diff against `Code.gs`. If they differ, the
 installed version wins — commit it here and note what changed.
 
-Longer term, [`clasp`](https://github.com/google/clasp) can pull and push the
-script from the command line, which would make this a real two-way sync instead
-of a manual copy.
+This is U1 in [../docs/UNKNOWNS.md](../docs/UNKNOWNS.md) and is still open.
+
+## Round-tripping with clasp
+
+[`clasp`](https://github.com/google/clasp) turns the copy-paste above into a real
+two-way sync. Setting it up is a one-time job and needs your Google account.
+
+```bash
+npm install -g @google/clasp
+clasp login                      # opens a browser
+```
+
+Then find the script id: open the Base Template sheet, **Extensions → Apps
+Script**, then **Project Settings**, and copy the Script ID. Create the local
+config from the example:
+
+```bash
+cd apps-script
+cp .clasp.json.example .clasp.json
+# replace PASTE_SCRIPT_ID_HERE with the Script ID
+```
+
+`.clasp.json` is gitignored because it is machine-local and identifies a specific
+script; `.clasp.json.example` is the tracked template.
+
+Day to day:
+
+```bash
+clasp pull      # bring Google's version into Code.gs, then git diff it
+clasp push      # send this directory to Google
+```
+
+**Always `clasp pull` and inspect the diff before pushing.** A push overwrites
+whatever is in Google, and someone may have edited it in the browser. The first
+pull is how U1 gets answered.
+
+`appsscript.json` is the project manifest clasp requires. The timezone is set to
+America/Phoenix and the runtime to V8; if the installed project differs, the
+first `clasp pull` will correct this file.

@@ -50,13 +50,36 @@ Built with modern web technologies for reliability and performance:
 | Path | Contents |
 | --- | --- |
 | `src/` | The SvelteKit quiz application |
+| `tests/` | Playwright end-to-end tests, run by CI as a gate on deploy |
 | `docs/` | Documentation — **start at [`docs/README.md`](docs/README.md)** |
 | `docs/archive/` | Superseded documents, kept for history. Do not trust for current behaviour. |
 | `apps-script/` | The Google Apps Script bound to the Base Template sheet |
 | `template/` | Snapshots of the Base Template spreadsheet |
+| `wordpress/` | The embed generator from quizthevote.com/build-your-quiz/ |
 
 Known bugs and open work are tracked in
-[`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
+[`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md). Unverified assumptions, each with
+a test and an owner, are tracked in [`docs/UNKNOWNS.md`](docs/UNKNOWNS.md).
+
+## Development
+
+```bash
+npm install
+npm run dev      # http://localhost:5173, no base path in dev
+npm run check    # svelte-check; must be clean
+npm test         # Playwright, desktop and mobile
+npm run build    # fails if any prerendered link 404s
+```
+
+Useful URLs against a dev server:
+
+| URL | What it does |
+| --- | --- |
+| `/?sheet=<id>` | Loads a real sheet. `svo=true` is accepted but no longer needed. |
+| `/?demo=true` | Built-in fixture, which includes inactive questions on purpose |
+| `/?sheet=<id>&debug=true` | Also shows non-critical spreadsheet advisories |
+| `/?title=Some%20Race` | Replaces the header text |
+| `/?header=false` | Removes the header, for embedding |
 
 ## Support
 

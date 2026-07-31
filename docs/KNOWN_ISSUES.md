@@ -1,60 +1,47 @@
 # Known Issues
 
-Audited 2026-07-31 against commit `78f66b5` (tagged `v2.4.0`), the state
-deployed since 2025-10-20. Every item below was reproduced, not inferred.
+Originally audited 2026-07-31 against commit `78f66b5` (tagged `v2.4.0`), the
+state deployed since 2025-10-20. Every item was reproduced, not inferred.
 
-## Blockers
+Updated 2026-07-31 after the fixes described in [UNKNOWNS.md](UNKNOWNS.md) and
+the commits on branch `chore/consolidate-docs`. Fixed items are kept, marked, and
+dated, because the audit trail is the point: several of these were introduced by
+a change that looked safe.
 
-### 1. Results screen renders nothing when any question is `Active = FALSE`
+## Fixed
 
-The function that advances to the results step counts *all* questions, while
-the guard that decides whether to draw the results step counts only *active*
-questions:
+### 1. Results screen renders nothing when any question is `Active = FALSE` — FIXED
 
-- `src/routes/+page.svelte:199` — `currentQuestionIndex = quizData.questions.length + 1`
-- `src/routes/+page.svelte:231` — `showResults = ... currentQuestionIndex === activeQuestions.length + 1`
-
-When the two disagree, no branch in the template matches and `<main>` renders
-empty. Reproduce with `?svo=true&demo=true`: the bundled sample data has 10
-questions with 5 inactive, so the app jumps to index 11 while the results
-screen waits for index 6.
+The function that advanced to the results step counted *all* questions, while the
+guard that decided whether to draw the results step counted only *active* ones.
+When the two disagreed no branch matched and `<main>` rendered empty.
 
 Introduced by `9d1eb75` ("CRITICAL FIX: Only display and score active
 questions"), which added the active-question filter but only half-migrated the
 step indexing.
 
-**Why production still works:** both the demo sheet and the Base Template
-currently have every row set to `Active = TRUE`, so the two counts coincide by
-accident. The bug fires the first time a newsroom deactivates a question —
-which the template instructions actively encourage.
+Production had been spared only because the demo sheet and Base Template had
+every row set to `Active = TRUE`, so the counts coincided by accident. It would
+have fired the first time a newsroom deactivated a question, which the template
+instructions encourage.
 
-### 2. Non-SVO mode reports every candidate as a non-responder
+Both counts now come from `activeQuestions`. Covered by
+`tests/quiz-flow.spec.ts`, which runs against a fixture that deliberately has 5
+of 10 questions inactive.
 
-The results screen splits candidates on a participation rate:
+### 2. Non-SVO mode reported every candidate as a non-responder — FIXED
 
-- `src/routes/+page.svelte:31-32` — filters on `(c.participationRate || 0) >= 0.5`
+The results screen split candidates on `(c.participationRate || 0) >= 0.5`, but
+only the SVO scorers populated that field. On the legacy path `|| 0` sent every
+candidate into the "Additional Candidates" bucket labelled "Did not respond to
+survey", with no percentages at all. This is what the bare production URL showed.
 
-Only the SVO scorers populate that field (`src/lib/scorer.ts:397` and `:520`).
-The legacy `calculateMatches` and `calculateWeightedMatches` do not, so
-`|| 0` sends every candidate into the "Additional Candidates" bucket labelled
-"Did not respond to survey", and no match percentages are shown at all.
+A missing rate is now treated as absence of evidence rather than proof of
+non-response. The legacy path has since been deleted outright (see 8).
 
-Reproduce at <https://quizthevote.github.io/votequiz/> with no parameters, or
-with `?demo=true`. Introduced by `21f66b4`.
+### 3. Every navigation link on the About, Methodology and Newsroom pages 404ed — FIXED
 
-## Bugs
-
-### 3. Every navigation link on the About, Methodology, and Newsroom pages 404s
-
-The hrefs are root-relative and carry a `.html` suffix, so they both discard
-the `/votequiz` base path and fail to match the built route names (`/about`,
-not `/about.html`):
-
-- `src/routes/about/+page.svelte:16-18`, `:75`
-- `src/routes/methodology/+page.svelte:16-18`, `:147`
-- `src/routes/newsroom/+page.svelte:107-109`, `:356`
-
-Confirmed dead:
+The hrefs were root-absolute, so they discarded the `/votequiz` base path:
 
 ```
 404  https://quizthevote.github.io/about.html
@@ -63,82 +50,127 @@ Confirmed dead:
 404  https://quizthevote.github.io/
 ```
 
-The "Try the Demo" buttons have the same defect
-(`about:78`, `methodology:144`, `newsroom:359`), so they 404 rather than
-reaching the demo. The build already warns about all of this on every deploy.
+The `.html` suffix was not the problem, since adapter-static does emit those
+files; the missing base path was. The "Try the Demo" buttons had the same defect.
 
-### 4. `candidate.website` does not exist
+The three pages now share one `SiteNav` component and route every href through
+`base`. The build's `handleHttpError` is set to `fail`, so a recurrence breaks
+the build rather than printing a warning nobody reads. Verified by clicking every
+link in a production preview.
 
-`src/routes/+page.svelte:433-441` guards on and links to `candidate.website`.
-The `Candidate` interface has `link_url` and `link_text`; there is no
-`website` field, so the link never renders in the Additional Candidates block.
-`svelte-check` flags this.
+### 4. `candidate.website` did not exist — FIXED
 
-### 5. Inactive questions leak into the answer comparison
+The results screen guarded on and linked to `candidate.website`. The `Candidate`
+interface has `link_url` and `link_text`, so no link ever rendered. Now reads
+`link_url` with `link_text` as the label.
 
-`src/lib/components/EnhancedResults.svelte:33-36` filters questions by topic
-but not by `active`, so the "View Answers" panel lists questions the user was
-never asked and attributes them as unanswered.
+### 5. Inactive questions leaked into the answer comparison — FIXED
 
-### 6. The embed builder prefers the wrong Google Sheets URL form
+`EnhancedResults.svelte` filtered questions by topic but not by `active`, so the
+View Answers panel listed questions nobody was asked and attributed them as
+unanswered by every candidate. Now filtered.
 
-Found 2026-07-31 while verifying U7. The generator on
-`quizthevote.com/build-your-quiz/` extracts the sheet id like this:
+### 8. Tabletop and the legacy non-SVO path — REMOVED
+
+`tabletop` was a runtime dependency imported at the top of `src/lib/sheets.ts`,
+so it shipped to every visitor. Tabletop.js is abandoned and targets a retired
+Google Sheets API, so the non-SVO `?sheet=` path could only fail — and it was the
+default whenever `svo=true` was absent.
+
+Deleted along with `fetchSheetData`, `calculateMatches`,
+`calculateWeightedMatches`, the duplicate 5-point question markup and the non-SVO
+fixture, for a net reduction of about 735 lines. Everything now parses as SVO and
+the `svo` parameter is an accepted no-op, so existing embeds keep working.
+
+### 9. An absent or lowercase `Active` column emptied the quiz — FIXED
+
+`active: row.Active === 'TRUE' || row.Active === true` meant a sheet with no
+`Active` column marked every question inactive, and so did `true`, `Yes` or
+`TRUE ` with a trailing space. The result was a quiz with nothing to ask.
+
+Parsing is now tolerant of case and of yes/1, and an absent column means all
+questions are active. A sheet where every question really is inactive now reports
+that as an error rather than rendering an empty quiz.
+
+## Open
+
+### 6. The WordPress embed builder prefers the wrong Google Sheets URL form
+
+Found while verifying U7. The generator on `quizthevote.com/build-your-quiz/`
+extracts the sheet id like this:
 
 ```js
 m=u.match(/\/spreadsheets\/d\/e\/([\w-]+)/); if(m)return m[1];   // checked FIRST
 m=u.match(/\/spreadsheets\/d\/([\w-]+)/);   if(m)return m[1];
 ```
 
-The `/d/e/` form is the **published-to-web** URL, and it is tested first. A
-newsroom that follows the instructions — which tell them to publish the
-`Quiz_Data` tab to the web — and then pastes the URL from that publish dialog
-gets its `2PACX-...` token extracted instead of the sheet id. Those tokens run
-to roughly 89 characters, so they fail the app's own guard at
-`src/lib/sheets.ts:156`, which requires 30 to 50 characters. The voter then sees
-the generic "Failed to load quiz data" message with no indication that the wrong
-URL was pasted.
+The `/d/e/` form is the **published-to-web** URL and it is tested first. A
+newsroom that follows the instructions, which tell them to publish the
+`Quiz_Data` tab, and then pastes the URL from that publish dialog gets its
+`2PACX-...` token extracted instead of the sheet id. Those tokens run to roughly
+89 characters and the app requires 30 to 50, so the voter sees a generic failure
+with no indication of the cause.
 
-This is why every instruction document insists on copying the browser address
-bar URL rather than the published one. The builder should prefer the plain
-`/spreadsheets/d/<id>` form and reject a `2PACX-` token with a specific message.
+This is why every instruction document insists on copying the address bar URL. A
+tool that has to be documented around is a tool that should reject the bad input.
 
-Fixing it requires a WordPress edit (see U8 in `UNKNOWNS.md`). The duplicate
-generator in this repo at `src/routes/newsroom/+page.svelte:64` has the same
-job and should be reconciled or removed.
+**Status:** the in-app copy of this generator
+(`src/routes/newsroom/+page.svelte`) is fixed, and a corrected drop-in
+replacement for WordPress is committed at
+`wordpress/build-your-quiz.fixed.js`. Deploying it needs WP admin access, so it
+remains open. See [../wordpress/README.md](../wordpress/README.md).
 
 ### 7. Results page overflows the recommended iframe height on mobile
 
-Found 2026-07-31 while verifying U12. At a 390x844 viewport against the demo
-sheet, the results step reports a `scrollHeight` of **967px** with all six
-candidates collapsed. The builder's default iframe height is 900px, and its
-slider tops out at 1200px.
+Found while verifying U12. At a 390x844 viewport against the demo sheet, the
+results step reports a `scrollHeight` of **967px** with all six candidates
+collapsed. The builder's default iframe height is 900px and its slider tops out
+at 1200px, so the default embed clips the results on a phone before the voter
+expands anything. Expanding a candidate makes it substantially taller.
 
-So the default embed already clips the results on a phone before the voter
-expands anything. Expanding a candidate to see topic matches makes it
-substantially taller. Either the embed needs to resize itself to its content
-(`postMessage` from the app to the parent page) or the default height needs to
-account for the tallest step.
+The real fix is for the app to post its height to the parent page and for the
+embed snippet to listen, so the iframe follows its content. Raising the default
+only moves the threshold.
+
+### 10. Three implementations of the embed URL builder
+
+The same string concatenation exists in the WordPress page, in
+`src/routes/newsroom/+page.svelte`, and in the docs. They have already drifted:
+the in-app version's Copy Template button pointed at sheet
+`1XtS_4-k5yDvgBT_CAqYR9nsUXK9B5aREZPKaALF2LsE` while the live builder uses
+`1B08mC5xl_crFRbNnOIKnPWvlSl1U9v_NDeLq73wa3o4`. Both now use `1B08mC5`, but
+**which template is correct has not been confirmed** — see U2.
+
+Worth deciding whether the in-app `/newsroom` page or the WordPress page is the
+real builder, and deleting the other.
+
+### 11. Two `<main>` elements on the quiz page
+
+`src/routes/+layout.svelte` and `src/routes/+page.svelte` each declare one, so
+the quiz page nests a `<main>` inside a `<main>`. That is invalid and confuses
+screen readers and any tooling that looks for the main landmark.
 
 ## Maintenance
 
-- **`npm run check` fails with 10 errors** and is not run by CI. Two of those
-  errors are issue 4 above.
-- **No tests of any kind.** One end-to-end run of "answer everything, see
-  results" would have caught issues 1 and 2.
-- **`tabletop` is still a runtime dependency** and is imported at the top of
-  `src/lib/sheets.ts`, so it ships to every visitor. Tabletop.js is abandoned
-  and targets a retired Google Sheets API, which means the entire non-SVO
-  `?sheet=` code path can only fail. Removing it and the legacy path deletes
-  roughly 250 lines.
-- **Verbose `console.log` output in production**, including a reactive block
-  that logs candidate classification on every update.
-- **CI pins Node 18**, which is end of life. Browser data (`caniuse-lite`) is
-  over a year stale.
+- **`npm run check` passes** (was 10 errors). CI now runs it, plus the Playwright
+  suite, as a gate on deploy.
+- **CI runs Node 22** (was end-of-life Node 18); `.nvmrc` records it.
+- **Browser data (`caniuse-lite`) is over a year stale.** `npx update-browserslist-db@latest`.
 - **No `npm run lint`** and no lint config.
+- **Three `svelte-check` warnings remain**: a drag handler without an ARIA role
+  in `TopicImportanceRanker.svelte`, an unassociated form label in
+  `newsroom/+page.svelte`, and the `@apply` at-rule, which is a false positive.
+- **The `elex-quiz-app/` directory** at the workspace root is an untouched
+  `npx sv create` scaffold, still serving "Welcome to SvelteKit". It is not in
+  any git repository, so deleting it cannot be undone from history. Awaiting a
+  decision.
 
 ## Not tracked in version control
 
-The WordPress embed-generator JavaScript on quizthevote.com exists only in the
-WordPress admin. The Base Template spreadsheet lives in Google Drive; only a
-snapshot is committed under `template/`.
+- The Base Template spreadsheet lives in Google Drive; only a snapshot is
+  committed under `template/`.
+- The Apps Script lives in Google's editor. `apps-script/Code.gs` is a committed
+  extraction that has never been diffed against what is installed (U1). `clasp`
+  is now configured to make that a two-way sync.
+- The WordPress generator is captured under `wordpress/` from the live page, but
+  the source of record is still in WP admin (U8).
