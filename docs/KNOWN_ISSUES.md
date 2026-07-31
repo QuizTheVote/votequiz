@@ -82,6 +82,20 @@ Deleted along with `fetchSheetData`, `calculateMatches`,
 fixture, for a net reduction of about 735 lines. Everything now parses as SVO and
 the `svo` parameter is an accepted no-op, so existing embeds keep working.
 
+### 11. Two `<main>` elements, and two stacked headers on the public pages — FIXED
+
+`+layout.svelte` rendered both a `<Navbar>` and a `<main>`, while every route
+also declared its own `<main>`. So each page nested a `<main>` inside a `<main>`,
+which is invalid and confuses screen readers, and the About, Methodology and
+Newsroom pages showed the layout's header above their own `SiteNav`. The second
+header was easy to miss while the logo was a small emoji and obvious the moment
+it became the real mark.
+
+The layout now renders nothing but the page. The quiz route owns `Navbar`, which
+is the right header for it: the quiz is embedded in an iframe on a newsroom's
+site, so it must not offer links that navigate the reader off that page. The
+public pages own `SiteNav` with the full link set.
+
 ### 9. An absent or lowercase `Active` column emptied the quiz — FIXED
 
 `active: row.Active === 'TRUE' || row.Active === true` meant a sheet with no
@@ -215,12 +229,6 @@ deliberate editorial choice. The problem is only that the page does not say so.
 Either the copy should describe the real rule, or the scoring should change to
 match the copy. Given that a matching percentage is the tool's central claim to
 readers, this is worth settling before the next election cycle.
-
-### 11. Two `<main>` elements on the quiz page
-
-`src/routes/+layout.svelte` and `src/routes/+page.svelte` each declare one, so
-the quiz page nests a `<main>` inside a `<main>`. That is invalid and confuses
-screen readers and any tooling that looks for the main landmark.
 
 ## Maintenance
 

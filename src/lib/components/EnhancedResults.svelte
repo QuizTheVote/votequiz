@@ -113,13 +113,20 @@
     return [...candidate.topicMatches].sort((a, b) => b.matchPercentage - a.matchPercentage);
   }
   
-  // Calculate color for match percentage
+  /**
+   * A diverging teal-to-sand scale, saturated at both ends and washed out in the
+   * middle. This replaces a green-to-red scale, for two reasons: red reads as
+   * "bad candidate", which is not a judgement a nonpartisan tool should make,
+   * and red against green is the pair the most common form of colour blindness
+   * cannot separate, which would have flattened the strongest and weakest
+   * matches into the same bar for roughly one man in twelve.
+   */
   function getMatchColor(percentage: number): string {
-    if (percentage >= 80) return 'bg-green-500';
-    if (percentage >= 60) return 'bg-green-400';
-    if (percentage >= 40) return 'bg-yellow-400';
-    if (percentage >= 20) return 'bg-yellow-500';
-    return 'bg-red-500';
+    if (percentage >= 80) return 'bg-brand-600';
+    if (percentage >= 60) return 'bg-brand-400';
+    if (percentage >= 40) return 'bg-brand-200';
+    if (percentage >= 20) return 'bg-sand-300';
+    return 'bg-sand-500';
   }
 
   // Handle image loading errors
@@ -139,7 +146,7 @@
       <div 
         role="button"
         tabindex="0"
-        class="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+        class="p-4 flex items-center justify-between cursor-pointer hover:bg-ink-50"
         on:click={() => toggleCandidateDetails(candidate.id)}
         on:keydown={(e) => e.key === 'Enter' && toggleCandidateDetails(candidate.id)}
         aria-expanded={expandedCandidateId === candidate.id}
@@ -155,23 +162,23 @@
                 on:error={(e) => handleImageError(e, candidate.name)}
                 loading="lazy"
               />
-              <div class="hidden absolute w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
-                <span class="text-gray-500 text-xl">{candidate.name.charAt(0)}</span>
+              <div class="hidden absolute w-16 h-16 rounded-full bg-ink-200 flex items-center justify-center">
+                <span class="text-ink-500 text-xl">{candidate.name.charAt(0)}</span>
               </div>
             {:else}
-              <div class="absolute w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
-                <span class="text-gray-500 text-xl">{candidate.name.charAt(0)}</span>
+              <div class="absolute w-16 h-16 rounded-full bg-ink-200 flex items-center justify-center">
+                <span class="text-ink-500 text-xl">{candidate.name.charAt(0)}</span>
               </div>
             {/if}
           </div>
           <div>
             <h3 class="text-base sm:text-xl font-semibold">{candidate.name}</h3>
-            <p class="text-xs sm:text-sm text-gray-600">{candidate.party}</p>
+            <p class="text-xs sm:text-sm text-ink-600">{candidate.party}</p>
           </div>
         </div>
         <div class="flex flex-col items-end">
           <div class="flex items-center">
-            <div class="flex h-7 w-16 bg-gray-200 rounded-full overflow-hidden">
+            <div class="flex h-7 w-16 bg-ink-200 rounded-full overflow-hidden">
               <div 
                 class={`${getMatchColor(candidate.matchPercentage)} h-full`} 
                 style={`width: ${candidate.matchPercentage}%`}
@@ -180,7 +187,7 @@
             <span class="ml-2 text-base sm:text-xl font-bold">{candidate.matchPercentage}%</span>
           </div>
           <div class="mt-1 flex items-center">
-            <span class="text-xs sm:text-sm text-gray-500 mr-2">
+            <span class="text-xs sm:text-sm text-ink-500 mr-2">
               {expandedCandidateId === candidate.id ? 'Hide Details' : 'Show Details'}
             </span>
             <svg 
@@ -197,7 +204,7 @@
       </div>
       
       {#if expandedCandidateId === candidate.id}
-        <div id={`candidate-details-${candidate.id}`} class="p-4 bg-gray-50 border-t">
+        <div id={`candidate-details-${candidate.id}`} class="p-4 bg-ink-50 border-t">
           <!-- Basic Candidate Info -->
           <p class="mb-4">{candidate.bio}</p>
           
@@ -211,7 +218,7 @@
                     <div class="flex items-center">
                       <div class="w-1/3 font-medium">{topicMatch.topicName}</div>
                       <div class="w-2/3 flex items-center">
-                        <div class="flex-grow h-4 bg-gray-200 rounded-full overflow-hidden">
+                        <div class="flex-grow h-4 bg-ink-200 rounded-full overflow-hidden">
                           <div 
                             class={`${getMatchColor(topicMatch.matchPercentage)} h-full`} 
                             style={`width: ${topicMatch.matchPercentage}%`}
@@ -219,7 +226,7 @@
                         </div>
                         <span class="ml-2 w-10 text-right font-bold">{topicMatch.matchPercentage}%</span>
                         <button 
-                          class="ml-2 text-xs text-blue-600 hover:text-blue-800 underline"
+                          class="ml-2 text-xs text-brand-600 hover:text-brand-800 underline"
                           on:click={() => toggleTopicAnswers(candidate.id, topicMatch.topicId)}
                         >
                           {showingAnswers[`${candidate.id}-${topicMatch.topicId}`] ? 'Hide Answers' : 'View Answers'}
@@ -241,19 +248,19 @@
                           {@const similarityScore = !isNoAnswer ? calculateQuestionSimilarity(userAnswer, candidateAnswer, questionType, questionOptions) : 0}
                           {@const matchPercent = Math.round(similarityScore * 100)}
                           
-                          <div class="p-3 rounded-lg border border-gray-300" style="{
-                            isNoAnswer ? 'background-color: rgba(156, 163, 175, 0.05);' :
-                            matchPercent === 100 ? 'background-color: rgba(34, 197, 94, 0.05);' :
-                            matchPercent > 0 ? 'background-color: rgba(251, 146, 60, 0.05);' :
-                            'background-color: rgba(239, 68, 68, 0.05);'
+                          <div class="p-3 rounded-lg border border-ink-300" style="{
+                            isNoAnswer ? 'background-color: rgba(80, 85, 91, 0.05);' :
+                            matchPercent === 100 ? 'background-color: rgba(0, 140, 149, 0.06);' :
+                            matchPercent > 0 ? 'background-color: rgba(80, 85, 91, 0.04);' :
+                            'background-color: rgba(191, 145, 96, 0.08);'
                           }">
                             <!-- Match/Mismatch/No Answer Header -->
                             <div class="flex items-center mb-2">
                               <span class="text-sm font-bold {
-                                isNoAnswer ? 'text-gray-600' :
-                                matchPercent === 100 ? 'text-green-700' :
-                                matchPercent > 0 ? 'text-orange-600' :
-                                'text-red-700'
+                                isNoAnswer ? 'text-ink-600' :
+                                matchPercent === 100 ? 'text-brand-700' :
+                                matchPercent > 0 ? 'text-ink-600' :
+                                'text-sand-700'
                               }">
                                 {isNoAnswer ? '⚠ NO CANDIDATE ANSWER PROVIDED' :
                                  matchPercent === 100 ? '✓ MATCH (100%)' :
@@ -263,19 +270,19 @@
                             </div>
                             
                             <!-- Question -->
-                            <p class="text-sm font-semibold text-gray-800 mb-2">{question.text}</p>
+                            <p class="text-sm font-semibold text-ink-800 mb-2">{question.text}</p>
                             
                             <!-- Answers - Consistent Format -->
                             <div class="space-y-1">
-                              <p class="text-xs text-gray-600">
-                                Your answer: <span class="font-medium text-gray-600">{formattedUserAnswer}</span>
+                              <p class="text-xs text-ink-600">
+                                Your answer: <span class="font-medium text-ink-600">{formattedUserAnswer}</span>
                               </p>
-                              <p class="text-xs text-gray-600">
+                              <p class="text-xs text-ink-600">
                                 {candidate.name}: <span class="font-medium {
-                                  isNoAnswer ? 'text-gray-600' :
-                                  matchPercent === 100 ? 'text-green-700' :
-                                  matchPercent > 0 ? 'text-orange-600' :
-                                  'text-red-600'
+                                  isNoAnswer ? 'text-ink-600' :
+                                  matchPercent === 100 ? 'text-brand-700' :
+                                  matchPercent > 0 ? 'text-ink-600' :
+                                  'text-sand-700'
                                 }">{formattedCandidateAnswer}</span>
                               </p>
                             </div>
@@ -296,7 +303,7 @@
                 href={candidate.link_url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700"
               >
                 {candidate.link_text || 'Visit Website'}
                 <svg class="ml-2 -mr-0.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -8,12 +8,12 @@
   <meta name="description" content="Learn about the science and team behind Quiz The Vote voter-candidate matching platform.">
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-ink-50">
   <SiteNav current="about" />
 
   <main class="max-w-4xl mx-auto px-4 py-12">
     <div class="bg-white rounded-xl shadow-lg p-8">
-      <h1 class="text-4xl font-bold text-gray-900 mb-8">About Quiz The Vote</h1>
+      <h1 class="text-4xl font-bold text-ink-900 mb-8">About Quiz The Vote</h1>
       
       <div class="prose prose-lg max-w-none">
         <h2>The Vision</h2>
@@ -59,13 +59,13 @@
           community contributions.
         </p>
 
-        <div class="mt-12 p-6 bg-blue-50 rounded-lg">
+        <div class="mt-12 p-6 bg-brand-50 rounded-lg">
           <h3 class="text-lg font-semibold mb-4">Ready to get started?</h3>
           <div class="space-x-4">
-            <a href="{base}/newsroom" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">
+            <a href="{base}/newsroom" class="bg-brand-600 text-white px-6 py-2 rounded-pill font-semibold hover:bg-brand-700">
               Create Your Quiz
             </a>
-            <a href="{base}/?svo=true&demo=true" class="border border-blue-600 text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50">
+            <a href="{base}/?svo=true&demo=true" class="border border-brand-600 text-brand-600 px-6 py-2 rounded-lg font-semibold hover:bg-brand-50">
               Try the Demo
             </a>
           </div>
