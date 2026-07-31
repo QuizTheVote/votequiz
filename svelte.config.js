@@ -27,8 +27,11 @@ const config = {
 
 		// Prerender all pages for static site generation
 		prerender: {
-			handleHttpError: 'warn',
-			handleMissingId: 'warn',
+			// 'fail', not 'warn': four nav links pointed at .html files without the
+			// base path and 404ed in production for months while the build kept
+			// reporting it as a warning nobody read.
+			handleHttpError: 'fail',
+			handleMissingId: 'fail',
 			entries: ['/', '/about', '/methodology', '/newsroom']
 		},
 		

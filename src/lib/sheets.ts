@@ -1,5 +1,3 @@
-import Tabletop from 'tabletop';
-
 /**
  * Converts Google Drive sharing URLs to direct image URLs
  * @param url - Original photo URL (could be Google Drive sharing URL or direct URL)
@@ -36,15 +34,6 @@ export interface Candidate {
   link_text?: string;
 }
 
-export interface Question {
-  id: string;
-  text: string;
-  topic: string;
-  explanation?: string;
-  type?: 'general' | 'local';
-}
-
-// New enhanced question interface for SVO framework
 export interface QuestionSVO {
   id: string;
   text: string;
@@ -56,13 +45,6 @@ export interface QuestionSVO {
   options: string[];
 }
 
-export interface CandidateAnswer {
-  candidateId: string;
-  questionId: string;
-  value: number;
-}
-
-// New enhanced candidate answer interface for SVO framework
 export interface CandidateAnswerSVO {
   candidateId: string;
   questionId: string;
@@ -87,63 +69,29 @@ export interface UserTopicWeight {
   weight: number;
 }
 
-export interface QuizData {
-  candidates: Candidate[];
-  questions: Question[];
-  candidateAnswers: CandidateAnswer[];
-  topics: Topic[];
-  topicImportance?: TopicImportance[];
+/**
+ * A problem found in the spreadsheet.
+ *
+ * `error` means the quiz a voter sees is wrong: a candidate is being scored
+ * against no answers, a topic ranking is being discarded, or a required column
+ * is absent. These are shown in the app, because the alternative is publishing
+ * a plausible-looking but incorrect quiz.
+ *
+ * `notice` means something is untidy but the results are still sound. These are
+ * shown only in development or with ?debug=true.
+ */
+export interface SheetDiagnostic {
+  severity: 'error' | 'notice';
+  message: string;
 }
 
-// New enhanced quiz data interface for SVO framework
 export interface QuizDataSVO {
   candidates: Candidate[];
   questions: QuestionSVO[];
   candidateAnswers: CandidateAnswerSVO[];
   topics: Topic[];
   topicImportance?: TopicImportance[];
-}
-
-/**
- * Validates that the sheet has all required tabs and columns
- */
-function validateSheetData(tabletop: any): string | null {
-  // Check if required sheets exist
-  const requiredSheets = ['Candidates', 'Questions', 'CandidateAnswers'];
-  for (const sheetName of requiredSheets) {
-    if (!tabletop.sheets(sheetName)) {
-      return `Missing required tab: "${sheetName}". Please make sure your Google Sheet has this tab.`;
-    }
-  }
-
-  // Validate Candidates sheet columns
-  const candidateColumns = ['id', 'name', 'party', 'photo', 'bio', 'link_url', 'link_text'];
-  const candidateSample = tabletop.sheets('Candidates').all()[0] || {};
-  for (const column of candidateColumns) {
-    if (!(column in candidateSample)) {
-      return `Missing required column "${column}" in the Candidates tab.`;
-    }
-  }
-
-  // Validate Questions sheet columns
-  const questionColumns = ['id', 'text', 'topic'];
-  const questionSample = tabletop.sheets('Questions').all()[0] || {};
-  for (const column of questionColumns) {
-    if (!(column in questionSample)) {
-      return `Missing required column "${column}" in the Questions tab.`;
-    }
-  }
-
-  // Validate CandidateAnswers sheet columns
-  const answerColumns = ['candidateId', 'questionId', 'value'];
-  const answerSample = tabletop.sheets('CandidateAnswers').all()[0] || {};
-  for (const column of answerColumns) {
-    if (!(column in answerSample)) {
-      return `Missing required column "${column}" in the CandidateAnswers tab.`;
-    }
-  }
-
-  return null; // No validation errors
+  diagnostics?: SheetDiagnostic[];
 }
 
 /**
@@ -156,35 +104,32 @@ function isValidSheetId(id: string): boolean {
   return /^[a-zA-Z0-9-_]{30,50}$/.test(id);
 }
 
-/**
- * Fetches SVO data from a Google Sheet using the new Quiz_Data structure
- * @param sheetId The ID of the Google Sheet
- * @returns Promise that resolves to the QuizDataSVO object
- */
+interface CsvSheet {
+  headers: string[];
+  rows: any[];
+}
+
 /**
  * Modern CSV-based approach for fetching Google Sheets data
  */
-async function fetchSheetAsCSV(sheetId: string, sheetName: string): Promise<any[]> {
+async function fetchSheetAsCSV(sheetId: string, sheetName: string): Promise<CsvSheet> {
   const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${sheetName}`;
-  console.log(`Fetching CSV from: ${csvUrl}`);
-  
+
   const response = await fetch(csvUrl);
   if (!response.ok) {
     throw new Error(`Failed to fetch ${sheetName}: ${response.status} ${response.statusText}`);
   }
-  
-  const csvText = await response.text();
-  return parseCSV(csvText);
+
+  return parseCSV(await response.text());
 }
 
-function parseCSV(csvText: string): any[] {
+function parseCSV(csvText: string): CsvSheet {
   const lines = csvText.split('\n').filter(line => line.trim());
-  if (lines.length === 0) return [];
-  
-  // Parse headers with proper CSV handling
+  if (lines.length === 0) return { headers: [], rows: [] };
+
   const headers = parseCSVLine(lines[0]);
   const rows = [];
-  
+
   for (let i = 1; i < lines.length; i++) {
     const values = parseCSVLine(lines[i]);
     const row: any = {};
@@ -193,8 +138,8 @@ function parseCSV(csvText: string): any[] {
     });
     rows.push(row);
   }
-  
-  return rows;
+
+  return { headers, rows };
 }
 
 // Proper CSV line parsing that handles quoted fields with commas
@@ -202,11 +147,11 @@ function parseCSVLine(line: string): string[] {
   const result = [];
   let current = '';
   let inQuotes = false;
-  
+
   for (let i = 0; i < line.length; i++) {
     const char = line[i];
     const nextChar = line[i + 1];
-    
+
     if (char === '"') {
       if (inQuotes && nextChar === '"') {
         // Escaped quote
@@ -225,225 +170,240 @@ function parseCSVLine(line: string): string[] {
       current += char;
     }
   }
-  
+
   // Add final field
   result.push(current.trim());
-  
+
   return result;
+}
+
+/**
+ * Reads the Active column tolerantly.
+ *
+ * A sheet that says `true` or `Yes` instead of `TRUE` would otherwise mark every
+ * question inactive, which empties the quiz. An absent column means the newsroom
+ * never opted into the feature, so everything is active.
+ */
+function parseActiveFlag(raw: unknown, columnPresent: boolean): boolean {
+  if (!columnPresent) return true;
+  if (typeof raw === 'boolean') return raw;
+  const value = String(raw ?? '').trim().toLowerCase();
+  if (value === '') return true;
+  return value === 'true' || value === 'yes' || value === 'y' || value === '1';
+}
+
+/** Compares sheet headers to candidate names the way a human would. */
+function normalizeForComparison(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+/**
+ * Every join in this app is an exact string match with no referential integrity,
+ * so a typo produces a quiz that looks fine and scores wrongly. This names the
+ * exact cell to fix.
+ */
+function diagnoseSheet(
+  quizData: CsvSheet,
+  candidateSheet: CsvSheet,
+  candidates: Candidate[],
+  questions: QuestionSVO[],
+  topics: Topic[]
+): SheetDiagnostic[] {
+  const diagnostics: SheetDiagnostic[] = [];
+  // Severity decides who sees it. Reserve error for "the voter's matches will be
+  // wrong or absent", because those surface to the public. Anything the sheet
+  // owner should fix but that leaves scoring correct is a notice, shown only
+  // under ?debug=true.
+  const error = (message: string) => diagnostics.push({ severity: 'error', message });
+  const notice = (message: string) => diagnostics.push({ severity: 'notice', message });
+
+  if (!quizData.headers.includes('Question')) {
+    error('The Quiz_Data tab has no "Question" column, so no questions could be read.');
+  }
+  if (!quizData.headers.includes('Topic')) {
+    notice('The Quiz_Data tab has no "Topic" column, so topic ranking will not affect scores.');
+  }
+
+  for (const required of ['id', 'name'] as const) {
+    if (!candidateSheet.headers.includes(required)) {
+      error(`The Candidates tab has no "${required}" column.`);
+    }
+  }
+
+  // The template renamed website to link_url. A sheet copied before that change
+  // loses its candidate links with no other symptom. Scoring is unaffected, so
+  // this stays a notice.
+  if (candidateSheet.headers.includes('website') && !candidateSheet.headers.includes('link_url')) {
+    notice(
+      'The Candidates tab still uses a "website" column. Rename it to "link_url" ' +
+        '(and optionally add "link_text"), or candidate links will not appear.'
+    );
+  }
+
+  // The join that matters most: a Quiz_Data column header must exactly equal the
+  // candidate's name, or that candidate is scored against nothing.
+  for (const candidate of candidates) {
+    const name = candidate.name?.trim();
+    if (!name) {
+      error('A row in the Candidates tab has an empty "name", so it cannot be matched to answers.');
+      continue;
+    }
+    if (quizData.headers.includes(name)) continue;
+
+    const nearMiss = quizData.headers.find(
+      header => normalizeForComparison(header) === normalizeForComparison(name)
+    );
+    if (nearMiss) {
+      error(
+        `Candidate "${name}" does not match the Quiz_Data column "${nearMiss}". ` +
+          'The two must be identical, including capitalisation and spaces.'
+      );
+    } else {
+      error(
+        `Candidate "${name}" has no matching column in Quiz_Data, so they will score ` +
+          `zero against every question. Quiz_Data columns are: ${quizData.headers.join(', ')}.`
+      );
+    }
+  }
+
+  const activeQuestions = questions.filter(q => q.active);
+  if (questions.length > 0 && activeQuestions.length === 0) {
+    error(
+      'Every question in Quiz_Data is inactive, so the quiz has nothing to ask. ' +
+        'Set Active to TRUE for the questions you want to use.'
+    );
+  }
+
+  // Topic weighting is applied by matching Quiz_Data.Topic against Topics.id.
+  if (topics.length > 0) {
+    const topicIds = new Set(topics.map(t => t.id?.trim()).filter(Boolean));
+    const usedTopicIds = new Set(activeQuestions.map(q => q.topic?.trim()).filter(Boolean));
+
+    for (const used of usedTopicIds) {
+      if (!topicIds.has(used)) {
+        error(
+          `Question topic "${used}" is not an id in the Topics tab, so the voter's ranking ` +
+            'is ignored for those questions.'
+        );
+      }
+    }
+    for (const declared of topicIds) {
+      if (!usedTopicIds.has(declared)) {
+        notice(
+          `Topic "${declared}" is offered on the ranking screen but no active question uses it, ` +
+            'so ranking it changes nothing.'
+        );
+      }
+    }
+  }
+
+  return diagnostics;
 }
 
 export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDataSVO> {
   if (!sheetId || !isValidSheetId(sheetId)) {
-    throw new Error('Valid Google Sheet ID required. Format: 1ayBgqVYpBirba1Scg8zgYlrmk4K61HrxgvrsYJO7G7Y');
+    throw new Error(
+      'That does not look like a Google Sheet ID. Copy the ID from your sheet\'s address bar ' +
+        'URL, the part between /d/ and /edit, not the "Publish to web" URL. ' +
+        'Example: 1ayBgqVYpBirba1Scg8zgYlrmk4K61HrxgvrsYJO7G7Y'
+    );
   }
 
   try {
-    console.log('Fetching SVO data using modern CSV approach');
-    
-    // Fetch all sheets as CSV
-    const [quizDataRows, candidates, topics] = await Promise.all([
+    const [quizDataSheet, candidateSheet, topicSheet] = await Promise.all([
       fetchSheetAsCSV(sheetId, 'Quiz_Data'),
-      fetchSheetAsCSV(sheetId, 'Candidates'), 
-      fetchSheetAsCSV(sheetId, 'Topics').catch(() => []) // Topics is optional
+      fetchSheetAsCSV(sheetId, 'Candidates'),
+      fetchSheetAsCSV(sheetId, 'Topics').catch(() => ({ headers: [], rows: [] }) as CsvSheet)
     ]);
-    
-    console.log('Quiz_Data rows:', quizDataRows.length);
-    console.log('Candidates found:', candidates.length);
-    console.log('Topics found:', topics.length);
-    
-    // Convert Google Drive sharing URLs to direct image URLs
+
+    const candidates = candidateSheet.rows as Candidate[];
+    const topics = topicSheet.rows as Topic[];
+
     candidates.forEach(candidate => {
       if (candidate.photo) {
-        const originalUrl = candidate.photo;
         candidate.photo = convertToDirectImageUrl(candidate.photo);
-        
-        // Debug logging
-        if (originalUrl !== candidate.photo) {
-          console.log(`🔄 Converted ${candidate.name} photo URL:`);
-          console.log(`   From: ${originalUrl}`);
-          console.log(`   To: ${candidate.photo}`);
-        } else {
-          console.log(`🖼️ ${candidate.name} photo (no conversion needed):`, candidate.photo);
-        }
-      } else {
-        console.log(`⚠️ ${candidate.name} has no photo URL`);
       }
     });
 
-    // Parse questions from Quiz_Data
+    const hasActiveColumn = quizDataSheet.headers.includes('Active');
     const questions: QuestionSVO[] = [];
     const candidateAnswers: CandidateAnswerSVO[] = [];
-    let questionCounter = 1; // Track valid questions for ID generation
-    
-    quizDataRows.forEach((row, index) => {
-      console.log(`Processing row ${index + 1}:`, row);
-      
-      // Skip rows with empty question text
-      const questionText = row.Question || '';
-      if (!questionText.trim()) {
-        console.warn(`⚠️ Skipping row ${index + 1}: Empty question text`);
-        return; // Skip this row entirely
+    const answerCounts = new Map<string, number>();
+    let skippedRows = 0;
+
+    quizDataSheet.rows.forEach(row => {
+      const questionText = (row.Question || '').trim();
+      if (!questionText) {
+        skippedRows++;
+        return;
       }
-      
-      // Create question with sequential ID for valid questions only
+
       const question: QuestionSVO = {
-        id: `q${questionCounter}`,
+        id: `q${questions.length + 1}`,
         text: questionText,
         topic: row.Topic || '',
         explanation: row.Explanation || '',
         type: row.Type || 'agree_5',
         priority: row.Priority || 'Essential',
-        active: row.Active === 'TRUE' || row.Active === true,
-        options: [
-          row.Option1,
-          row.Option2, 
-          row.Option3,
-          row.Option4,
-          row.Option5
-        ].filter(opt => opt && opt.trim() !== '')
+        active: parseActiveFlag(row.Active, hasActiveColumn),
+        options: [row.Option1, row.Option2, row.Option3, row.Option4, row.Option5].filter(
+          opt => opt && opt.trim() !== ''
+        )
       };
-      
-      console.log('Created question:', question);
       questions.push(question);
-      
-      // Increment counter for next valid question
-      questionCounter++;
 
-      // Extract candidate answers from the same row
       candidates.forEach(candidate => {
-        // Use full candidate name to match column headers
-        const candidateColumnName = candidate.name.trim();
-        const answerValue = row[candidateColumnName];
-        
-        console.log(`Looking for column '${candidateColumnName}' for candidate ${candidate.id}:`, answerValue);
-        console.log(`Available columns:`, Object.keys(row));
-        
-        // Show first row only to avoid spam
-        if (index === 0) {
-          console.log(`🔍 DEBUGGING: All column headers in Quiz_Data:`, Object.keys(row));
-          console.log(`🔍 DEBUGGING: Looking for candidate names:`, candidates.map(c => c.name));
-        }
-        
+        const answerValue = row[candidate.name?.trim()];
         if (answerValue !== undefined && answerValue !== '') {
           candidateAnswers.push({
             candidateId: candidate.id,
             questionId: question.id,
             value: answerValue
           });
-        } else {
-          console.warn(`⚠️ No answer found for candidate ${candidate.name} in question ${question.id}`);
+          answerCounts.set(candidate.id, (answerCounts.get(candidate.id) ?? 0) + 1);
         }
       });
     });
-    
-    console.log('Final questions:', questions.length);
-    console.log('Final candidate answers:', candidateAnswers.length);
+
+    const diagnostics = diagnoseSheet(quizDataSheet, candidateSheet, candidates, questions, topics);
+
+    if (skippedRows > 0) {
+      diagnostics.push({
+        severity: 'notice',
+        message: `${skippedRows} Quiz_Data row(s) were skipped because the Question cell was empty.`
+      });
+    }
+
+    const activeCount = questions.filter(q => q.active).length;
+    for (const candidate of candidates) {
+      const answered = answerCounts.get(candidate.id) ?? 0;
+      if (answered === 0 && activeCount > 0) {
+        diagnostics.push({
+          severity: 'notice',
+          message: `${candidate.name || candidate.id} has no answers in Quiz_Data and will be listed as a non-responder.`
+        });
+      }
+    }
+
+    console.log(
+      `Loaded ${questions.length} question(s) (${activeCount} active), ${candidates.length} candidate(s), ` +
+        `${topics.length} topic(s), ${diagnostics.filter(d => d.severity === 'error').length} error(s).`
+    );
+    diagnostics.forEach(d =>
+      d.severity === 'error' ? console.error(`[sheet] ${d.message}`) : console.warn(`[sheet] ${d.message}`)
+    );
 
     return {
       candidates,
       questions,
       candidateAnswers,
       topics,
-      topicImportance: []
+      topicImportance: [],
+      diagnostics
     };
   } catch (error) {
-    throw new Error(`Error processing SVO sheet data: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Error processing sheet data: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }
-
-/**
- * Fetches data from a Google Sheet using Tabletop.js (traditional structure)
- * @param sheetId The ID of the Google Sheet
- * @returns Promise that resolves to the QuizData object
- */
-export async function fetchSheetData(sheetId: string | null): Promise<QuizData> {
-  if (!sheetId || !isValidSheetId(sheetId)) {
-    throw new Error('Valid Google Sheet ID required. Format: 1ayBgqVYpBirba1Scg8zgYlrmk4K61HrxgvrsYJO7G7Y');
-  }
-
-  return new Promise((resolve, reject) => {
-    try {
-      const tabletopOptions = {
-        key: sheetId,
-        callback: (data: any, tabletop: any) => {
-          try {
-            // Validate sheet structure
-            const validationError = validateSheetData(tabletop);
-            if (validationError) {
-              reject(new Error(validationError));
-              return;
-            }
-
-            // Get data from each sheet
-            const candidates = tabletop.sheets('Candidates').all() as Candidate[];
-            const questions = tabletop.sheets('Questions').all() as Question[];
-            const candidateAnswers = tabletop.sheets('CandidateAnswers').all() as CandidateAnswer[];
-            
-            // Convert Google Drive sharing URLs to direct image URLs for legacy path
-            candidates.forEach(candidate => {
-              if (candidate.photo) {
-                const originalUrl = candidate.photo;
-                candidate.photo = convertToDirectImageUrl(candidate.photo);
-                
-                // Debug logging
-                if (originalUrl !== candidate.photo) {
-                  console.log(`🔄 [Legacy] Converted ${candidate.name} photo URL:`);
-                  console.log(`   From: ${originalUrl}`);
-                  console.log(`   To: ${candidate.photo}`);
-                }
-              }
-            });
-            
-            // Topics sheet is optional
-            let topics: Topic[] = [];
-            try {
-              if (tabletop.sheets('Topics')) {
-                topics = tabletop.sheets('Topics').all() as Topic[];
-              }
-            } catch (e) {
-              console.log('Topics tab not found, continuing without it.');
-            }
-
-            // Topic importance is optional
-            let topicImportance: TopicImportance[] = [];
-            try {
-              if (tabletop.sheets('TopicImportance')) {
-                topicImportance = tabletop.sheets('TopicImportance').all() as TopicImportance[];
-              }
-            } catch (e) {
-              console.log('TopicImportance tab not found, continuing without it.');
-            }
-
-            // Convert string values to numbers in candidateAnswers
-            const processedAnswers = candidateAnswers.map(answer => ({
-              ...answer,
-              value: typeof answer.value === 'string' ? parseInt(answer.value, 10) : answer.value
-            }));
-
-            // Convert string weights to numbers in topicImportance
-            const processedImportance = topicImportance.map(importance => ({
-              ...importance,
-              weight: typeof importance.weight === 'string' ? parseInt(importance.weight, 10) : importance.weight
-            }));
-
-            resolve({
-              candidates,
-              questions,
-              candidateAnswers: processedAnswers,
-              topics,
-              topicImportance: processedImportance
-            });
-          } catch (error) {
-            reject(new Error(`Error processing sheet data: ${error instanceof Error ? error.message : String(error)}`));
-          }
-        },
-        simpleSheet: false,
-        debug: false
-      };
-
-      Tabletop.init(tabletopOptions);
-    } catch (error) {
-      reject(new Error(`Failed to initialize Tabletop: ${error instanceof Error ? error.message : String(error)}`));
-    }
-  });
-} 

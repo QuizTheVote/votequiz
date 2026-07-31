@@ -1,9 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { QuizData, QuizDataSVO, Question, QuestionSVO, Candidate, UserTopicWeight } from '$lib/sheets';
-  import { fetchSheetData, fetchSheetDataSVO } from '$lib/sheets';
-  import { calculateMatches, calculateWeightedMatches, calculateSVOMatches, calculateWeightedSVOMatches, type UserAnswer, type UserAnswerSVO } from '$lib/scorer';
-  import { getSampleData } from '$lib/sampleData';
+  import type { QuizDataSVO, QuestionSVO, Candidate, UserTopicWeight, SheetDiagnostic } from '$lib/sheets';
+  import { fetchSheetDataSVO } from '$lib/sheets';
+  import { calculateSVOMatches, calculateWeightedSVOMatches, type UserAnswerSVO } from '$lib/scorer';
   import { getSampleDataSVO } from '$lib/sampleDataSVO';
   import TopicImportanceRanker from '$lib/components/TopicImportanceRanker.svelte';
   import EnhancedResults from '$lib/components/EnhancedResults.svelte';
@@ -12,12 +11,11 @@
   // Configuration variables - now determined by URL parameters
   let sheetId: string | null = null;
   let useSampleData = false;
-  let useSVOMode = false;
-  
-  // Support both old and new data structures
-  let quizData: QuizData | QuizDataSVO | null = null;
+  let showDiagnostics = false;
+
+  let quizData: QuizDataSVO | null = null;
   let currentQuestionIndex = -1; // -1 for welcome screen, questions.length for topic ranking, questions.length + 1 for results
-  let userAnswers: UserAnswer[] | UserAnswerSVO[] = [];
+  let userAnswers: UserAnswerSVO[] = [];
   let userTopicWeights: UserTopicWeight[] = [];
   let candidateMatches: Array<Candidate & { 
     matchPercentage: number,
@@ -27,20 +25,22 @@
     totalQuestions?: number
   }> = [];
   
-  // Separate participating and non-participating candidates
-  $: participatingCandidates = candidateMatches.filter(c => (c.participationRate || 0) >= 0.5);
-  $: nonParticipatingCandidates = candidateMatches.filter(c => (c.participationRate || 0) < 0.5);
+  // Separate participating and non-participating candidates.
+  // Only the SVO scorers report a participation rate. When it is absent we have
+  // no evidence a candidate failed to respond, so they belong in the main list.
+  $: participatingCandidates = candidateMatches.filter(
+    c => c.participationRate === undefined || c.participationRate >= 0.5
+  );
+  $: nonParticipatingCandidates = candidateMatches.filter(
+    c => c.participationRate !== undefined && c.participationRate < 0.5
+  );
   
-  // Debug logging for candidate classification
-  $: {
-    if (candidateMatches.length > 0) {
-      console.log(`🔍 CANDIDATE CLASSIFICATION:`);
-      console.log(`Participating (≥50%): ${participatingCandidates.length} candidates`);
-      console.log(`Non-participating (<50%): ${nonParticipatingCandidates.length} candidates`);
-      participatingCandidates.forEach(c => console.log(`  ✅ ${c.name}: ${Math.round((c.participationRate || 0) * 100)}%`));
-      nonParticipatingCandidates.forEach(c => console.log(`  ❌ ${c.name}: ${Math.round((c.participationRate || 0) * 100)}%`));
-    }
-  }
+  // Problems found in the spreadsheet. Errors mean the results are wrong, so
+  // they are shown to everyone; notices only to whoever is setting the quiz up.
+  $: diagnostics = quizData?.diagnostics ?? [];
+  $: sheetErrors = diagnostics.filter((d: SheetDiagnostic) => d.severity === 'error');
+  $: visibleDiagnostics = showDiagnostics ? diagnostics : sheetErrors;
+
   let loading = true;
   let error: string | null = null;
   let expandedCandidateId: string | null = null;
@@ -52,31 +52,13 @@
       const urlParams = new URLSearchParams(window.location.search);
       sheetId = urlParams.get('sheet');
       useSampleData = urlParams.get('demo') === 'true' || !sheetId;
-      useSVOMode = urlParams.get('svo') === 'true';
-      
-      if (useSampleData) {
-        // Use sample data for development or when no sheet ID provided
-        if (useSVOMode) {
-          quizData = await getSampleDataSVO();
-        } else {
-          quizData = await getSampleData();
-        }
-        loading = false;
-        return;
-      }
-      
-      if (!sheetId) {
-        error = 'No Google Sheet ID provided. Add ?sheet=YOUR_SHEET_ID to the URL, ?demo=true for sample data, or ?svo=true&demo=true for SVO demo.';
-        loading = false;
-        return;
-      }
-      
-      // Use appropriate parsing function based on mode
-      if (useSVOMode) {
-        quizData = await fetchSheetDataSVO(sheetId);
-      } else {
-        quizData = await fetchSheetData(sheetId);
-      }
+      // Sheet problems are shown to everyone when they corrupt results. The rest
+      // are advisory and only worth surfacing to whoever is setting the quiz up.
+      showDiagnostics = urlParams.get('debug') === 'true' || import.meta.env.DEV;
+
+      // The svo parameter is accepted but no longer meaningful: the SVO
+      // structure is the only one there is. Existing embeds all pass it.
+      quizData = useSampleData ? await getSampleDataSVO() : await fetchSheetDataSVO(sheetId);
       loading = false;
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -100,20 +82,11 @@
       userAnswers = [...userAnswers, { questionId, value }];
     }
     
-    // Move to next active question
-    console.log(`🔄 NAVIGATION DEBUG:`);
-    console.log(`Current question index: ${currentQuestionIndex}`);
-    console.log(`Active questions length: ${activeQuestions.length}`);
-    console.log(`Current question:`, currentQuestion);
-    console.log(`Next question would be:`, activeQuestions[currentQuestionIndex + 1]);
-    
     if (currentQuestionIndex < activeQuestions.length - 1) {
       currentQuestionIndex++;
-      console.log(`✅ Moving to question ${currentQuestionIndex + 1}`);
     } else {
       // Go to topic importance ranking screen
       currentQuestionIndex = activeQuestions.length;
-      console.log(`🎯 Moving to topic ranking`);
     }
   }
 
@@ -145,58 +118,31 @@
   }
 
   function calculateAndShowResults() {
-    // Calculate matches with appropriate scoring function based on mode
     if (quizData) {
-      if (useSVOMode) {
-        // Use SVO scoring functions
-        const svoQuizData = quizData as QuizDataSVO;
-        const svoUserAnswers = userAnswers as UserAnswerSVO[];
-        
-        if (svoQuizData.topics && svoQuizData.topics.length > 0 && userTopicWeights.length > 0) {
-          candidateMatches = calculateWeightedSVOMatches(
-            svoUserAnswers,
+      const hasTopicRanking =
+        quizData.topics && quizData.topics.length > 0 && userTopicWeights.length > 0;
+
+      candidateMatches = hasTopicRanking
+        ? calculateWeightedSVOMatches(
+            userAnswers,
             userTopicWeights,
-            svoQuizData.candidateAnswers,
-            svoQuizData.candidates,
-            svoQuizData.questions,
-            svoQuizData.topics
+            quizData.candidateAnswers,
+            quizData.candidates,
+            quizData.questions,
+            quizData.topics
+          )
+        : calculateSVOMatches(
+            userAnswers,
+            quizData.candidateAnswers,
+            quizData.candidates,
+            quizData.questions
           );
-        } else {
-          candidateMatches = calculateSVOMatches(
-            svoUserAnswers,
-            svoQuizData.candidateAnswers,
-            svoQuizData.candidates,
-            svoQuizData.questions
-          );
-        }
-      } else {
-        // Use original scoring functions
-        const regularQuizData = quizData as QuizData;
-        const regularUserAnswers = userAnswers as UserAnswer[];
-        
-        if (regularQuizData.topics && regularQuizData.topics.length > 0 && userTopicWeights.length > 0) {
-          candidateMatches = calculateWeightedMatches(
-            regularUserAnswers,
-            userTopicWeights,
-            regularQuizData.candidateAnswers,
-            regularQuizData.candidates,
-            regularQuizData.questions,
-            regularQuizData.topics
-          );
-        } else {
-          candidateMatches = calculateMatches(
-            regularUserAnswers,
-            regularQuizData.candidateAnswers,
-            regularQuizData.candidates,
-            regularQuizData.questions
-          );
-        }
-      }
     }
     
-    // Show results screen
+    // Show results screen. Must be indexed off activeQuestions to match the
+    // showResults guard below, or inactive questions leave this unrenderable.
     if (quizData) {
-      currentQuestionIndex = quizData.questions.length + 1;
+      currentQuestionIndex = activeQuestions.length + 1;
     }
   }
 
@@ -208,21 +154,19 @@
     }
   }
 
-  // Get only active questions for display
-  $: activeQuestions = useSVOMode 
-    ? (quizData as QuizDataSVO)?.questions.filter(q => q.active) || []
-    : quizData?.questions || [];
-    
-  // Debug active questions
-  $: if (activeQuestions.length > 0) {
-    console.log(`📋 ACTIVE QUESTIONS DEBUG:`);
-    console.log(`Total active questions: ${activeQuestions.length}`);
-    activeQuestions.forEach((q, i) => {
-      console.log(`  ${i + 1}. ${q.id}: "${q.text}" (${q.type}, active: ${(q as QuestionSVO).active})`);
-    });
+  function handleImageError(event: Event) {
+    const img = event.currentTarget as HTMLImageElement;
+    img.style.display = 'none';
+    const fallback = img.nextElementSibling;
+    if (fallback instanceof HTMLElement) {
+      fallback.classList.remove('hidden');
+    }
   }
-    
-  // Use active questions for current question (not full question array)
+
+  // Only active questions are asked. Every step index below counts these, never
+  // the full list, or the results step becomes unreachable.
+  $: activeQuestions = quizData?.questions.filter(q => q.active) ?? [];
+
   $: currentQuestion = activeQuestions[currentQuestionIndex];
   $: currentAnswer = currentQuestion 
     ? userAnswers.find(a => a.questionId === currentQuestion.id)?.value 
@@ -230,8 +174,7 @@
   $: showTopicRanking = quizData && currentQuestionIndex === activeQuestions.length;
   $: showResults = quizData && currentQuestionIndex === activeQuestions.length + 1;
   
-  // Type-safe access to SVO questions
-  $: currentSVOQuestion = (useSVOMode && currentQuestion) ? currentQuestion as QuestionSVO : null;
+  $: currentSVOQuestion = (currentQuestion as QuestionSVO) ?? null;
   
   // Initialize topic weights when topics first become available
   $: if (quizData?.topics && quizData.topics.length > 0 && userTopicWeights.length === 0) {
@@ -243,6 +186,23 @@
 </script>
 
 <main class="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-3xl">
+  {#if visibleDiagnostics.length > 0}
+    <!-- Deliberately visible to voters when severity is error: a misconfigured
+         sheet otherwise produces a plausible-looking but incorrect quiz. -->
+    <div class="mb-6 rounded border border-amber-400 bg-amber-50 px-4 py-3 text-amber-900">
+      <p class="font-bold">
+        {sheetErrors.length > 0
+          ? 'This quiz has a spreadsheet problem that affects its results'
+          : 'Spreadsheet advisories'}
+      </p>
+      <ul class="mt-2 ml-5 list-disc space-y-1 text-sm">
+        {#each visibleDiagnostics as diagnostic}
+          <li>{diagnostic.message}</li>
+        {/each}
+      </ul>
+    </div>
+  {/if}
+
   {#if loading}
     <div class="flex flex-col items-center justify-center py-20">
       <div class="text-center">
@@ -256,20 +216,17 @@
       <p>{error}</p>
     </div>
     
-    {#if devMode && !useSampleData}
-      <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
-        <p class="font-bold">Developer Setup Instructions</p>
+    {#if !useSampleData}
+      <div class="bg-blue-50 border border-blue-300 text-blue-900 px-4 py-3 rounded">
+        <p class="font-bold">Checklist for setting up a sheet</p>
         <ol class="list-decimal ml-6 mt-2 space-y-2">
-          <li>Create a Google Sheet with the following tabs: "Candidates", "Questions", "CandidateAnswers", and "Topics" (optional)</li>
-          <li>In the Candidates tab, add columns: id, name, party, photo, bio, website</li>
-          <li>In the Questions tab, add columns: id, text, topic, explanation</li>
-          <li>In the CandidateAnswers tab, add columns: candidateId, questionId, value (1-5)</li>
-          <li>In the Topics tab, add columns: id, name, description</li>
-          <li>Make your sheet public: File → Share → Publish to Web</li>
-          <li>Copy the Sheet ID from your URL: <code>https://docs.google.com/spreadsheets/d/<strong>YOUR_SHEET_ID_HERE</strong>/edit</code></li>
-          <li>Update the SHEET_ID constant in this file with your actual ID</li>
+          <li>Start from the Quiz The Vote base template rather than a blank sheet.</li>
+          <li><strong>Quiz_Data</strong> tab: one row per question, with columns Question, Topic, Type, Priority, Active, Option1 to Option5, and one column per candidate whose header is exactly that candidate's name.</li>
+          <li><strong>Candidates</strong> tab: id, name, party, photo, bio, link_url, link_text.</li>
+          <li><strong>Topics</strong> tab: id, name, description. Every id must be used by at least one question.</li>
+          <li>Share the sheet so anyone with the link can view it.</li>
+          <li>Use the ID from the address bar, the part between <code>/d/</code> and <code>/edit</code>, not the "Publish to web" URL.</li>
         </ol>
-        <p class="mt-4">Alternatively, you can set <code>USE_SAMPLE_DATA = true</code> to use the included sample data.</p>
       </div>
     {/if}
   {:else if currentQuestionIndex === -1}
@@ -289,14 +246,10 @@
       
       {#if useSampleData && devMode}
         <div class="mt-8 p-3 bg-yellow-100 text-yellow-800 rounded text-sm">
-          <p class="font-medium mb-2">Developer Mode Active</p>
-          <p class="mb-2">
-            Current: {useSVOMode ? 'SVO Framework Demo' : 'Traditional Quiz Demo'}
-          </p>
+          <p class="font-medium mb-2">Sample data</p>
           <div class="text-xs space-y-1">
-            <p>• Add <code>?sheet=YOUR_SHEET_ID</code> for real Google Sheet data</p>
-            <p>• Add <code>?svo=true&demo=true</code> for SVO framework demo</p>
-            <p>• Add <code>?demo=true</code> for traditional quiz demo</p>
+            <p>• Add <code>?sheet=YOUR_SHEET_ID</code> to load a real Google Sheet</p>
+            <p>• Add <code>?debug=true</code> to see sheet advisories as well as errors</p>
           </div>
         </div>
       {/if}
@@ -404,10 +357,7 @@
                         src={candidate.photo} 
                         alt={candidate.name}
                         class="absolute w-12 h-12 rounded-full object-cover"
-                        on:error={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling.style.display = 'flex';
-                        }}
+                        on:error={handleImageError}
                         loading="lazy"
                       />
                       <div class="hidden absolute w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
@@ -430,13 +380,14 @@
                       {/if}
                     </p>
                   </div>
-                  {#if candidate.website}
+                  {#if candidate.link_url}
                     <a 
-                      href={candidate.website} 
+                      href={candidate.link_url} 
                       target="_blank"
+                      rel="noopener noreferrer"
                       class="ml-3 text-xs text-blue-600 hover:text-blue-800 underline"
                     >
-                      Visit Website
+                      {candidate.link_text || 'Visit Website'}
                     </a>
                   {/if}
                 </div>
@@ -487,54 +438,12 @@
         <div class="w-16"></div> <!-- Spacer to maintain centering -->
       </div>
       
-      {#if useSVOMode && currentSVOQuestion}
-        <!-- SVO Mode: Use dynamic question renderer -->
+      {#if currentSVOQuestion}
         <QuestionRenderer 
           question={currentSVOQuestion}
           {currentAnswer}
           onAnswer={answerQuestion}
         />
-      {:else if currentQuestion}
-        <!-- Regular Mode: Use hardcoded 5-point scale -->
-        <div class="mb-10 p-6 bg-white rounded-lg shadow-md">
-          <h3 class="text-xl font-bold mb-4">{currentQuestion.text}</h3>
-          {#if currentQuestion.explanation}
-            <p class="text-gray-600 mb-6">{currentQuestion.explanation}</p>
-          {/if}
-          
-          <div class="flex flex-col space-y-3">
-            <button 
-              class={`p-3 rounded-lg border ${currentAnswer === 5 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
-              on:click={() => answerQuestion(currentQuestion.id, 5)}
-            >
-              Strongly Agree
-            </button>
-            <button 
-              class={`p-3 rounded-lg border ${currentAnswer === 4 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
-              on:click={() => answerQuestion(currentQuestion.id, 4)}
-            >
-              Somewhat Agree
-            </button>
-            <button 
-              class={`p-3 rounded-lg border ${currentAnswer === 3 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
-              on:click={() => answerQuestion(currentQuestion.id, 3)}
-            >
-              Neutral
-            </button>
-            <button 
-              class={`p-3 rounded-lg border ${currentAnswer === 2 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
-              on:click={() => answerQuestion(currentQuestion.id, 2)}
-            >
-              Somewhat Disagree
-            </button>
-            <button 
-              class={`p-3 rounded-lg border ${currentAnswer === 1 ? 'bg-blue-100 border-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}
-              on:click={() => answerQuestion(currentQuestion.id, 1)}
-            >
-              Strongly Disagree
-            </button>
-          </div>
-        </div>
       {/if}
     </div>
   {/if}

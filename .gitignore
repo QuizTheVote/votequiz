@@ -21,3 +21,14 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Playwright
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
+
+# clasp: machine-local, points at a specific Apps Script project.
+# Use apps-script/.clasp.json.example as the template.
+apps-script/.clasp.json
+.clasprc.json

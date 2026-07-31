@@ -1,0 +1,58 @@
+<div class="qtvgen" id="qtv-generator">
+<style>
+.qtvgen{font-family:"Plus Jakarta Sans",system-ui,sans-serif;max-width:800px;margin:0 auto;color:#283A47}
+.qtvgen *{box-sizing:border-box}
+.qtvgen .card{background:#fff;border-radius:14px;box-shadow:0 4px 14px rgba(40,58,71,.08);padding:32px;margin-bottom:28px}
+.qtvgen h2{font-family:"Bonnie","Plus Jakarta Sans",sans-serif;font-size:26px;color:#283A47;margin:0 0 6px}
+.qtvgen h3{font-family:"Bonnie","Plus Jakarta Sans",sans-serif;font-size:16px;color:#283A47;margin:22px 0 8px}
+.qtvgen p{color:#50555B;margin:0 0 18px}
+.qtvgen label{display:block;font-size:14px;font-weight:600;color:#50555B;margin-bottom:8px}
+.qtvgen input[type=url],.qtvgen input[type=text],.qtvgen textarea{width:100%;padding:11px 14px;border:1px solid #d5dbde;border-radius:10px;font-size:15px;font-family:inherit}
+.qtvgen textarea{font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.qtvgen input:focus,.qtvgen textarea:focus{outline:none;border-color:#008C95;box-shadow:0 0 0 3px rgba(0,140,149,.15)}
+.qtvgen .btn{display:inline-block;background:#008C95;color:#fff;border:none;border-radius:999px;padding:13px 30px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;text-decoration:none}
+.qtvgen .btn:hover{background:#005D63}
+.qtvgen .btn.sm{padding:9px 18px;font-size:14px}
+.qtvgen .btn.gray{background:#50555B}.qtvgen .btn.gray:hover{background:#35393D}
+.qtvgen .row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.qtvgen .row input,.qtvgen .row textarea{flex:1}
+.qtvgen .err{color:#C0492B;font-size:14px;margin:8px 0 0;display:none}
+.qtvgen .rng{display:flex;align-items:center;gap:16px}
+.qtvgen .rng input[type=range]{flex:1}
+.qtvgen .hval{font-family:ui-monospace,monospace;font-size:14px;background:#EEF1F2;padding:5px 10px;border-radius:6px}
+.qtvgen .prev{border:1px solid #d5dbde;border-radius:10px;overflow:hidden;margin-top:6px}
+.qtvgen .hidden{display:none}
+@media(max-width:640px){.qtvgen .row{flex-direction:column;align-items:stretch}}
+</style>
+
+<div class="card" id="qtv-step3">
+  <h2>Get your quiz link &amp; embed code</h2>
+  <p>Paste your Google Sheet URL below to generate a direct link and an embed code for your quiz.</p>
+  <label for="qtv-url">Google Sheet URL</label>
+  <input type="url" id="qtv-url" placeholder="https://docs.google.com/spreadsheets/d/...">
+  <p class="err" id="qtv-err">That doesn&rsquo;t look like a Google Sheet URL &mdash; paste the link to your sheet and try again.</p>
+  <div style="margin-top:16px"><button class="btn" id="qtv-gen">Generate embed code</button></div>
+</div>
+
+<div class="card hidden" id="qtv-results">
+  <h2>Your quiz is ready</h2>
+  <h3>Direct link</h3>
+  <div class="row">
+    <input type="text" id="qtv-direct" readonly>
+    <button class="btn sm" data-copy="qtv-direct">Copy</button>
+    <a class="btn sm gray" id="qtv-test" target="_blank" rel="noopener">Test</a>
+  </div>
+  <h3>Embed code for your website</h3>
+  <div class="row">
+    <textarea id="qtv-embed" rows="4" readonly></textarea>
+    <button class="btn sm" data-copy="qtv-embed">Copy</button>
+  </div>
+  <h3>Height</h3>
+  <div class="rng">
+    <input type="range" id="qtv-height" min="600" max="1200" step="50" value="900">
+    <span class="hval" id="qtv-hval">900px</span>
+  </div>
+  <p style="font-size:13px;margin-top:8px">Adjust if your quiz appears cut off. Most quizzes work well at 900px.</p>
+  <h3>Live preview</h3>
+  <div class="prev"><iframe id="qtv-frame" width="100%" height="900" frameborder="0" scrolling="yes" title="Quiz preview" style="border:none"></iframe></div>
+</div>

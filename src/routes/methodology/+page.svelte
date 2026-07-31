@@ -1,25 +1,15 @@
+<script lang="ts">
+  import { base } from '$app/paths';
+  import SiteNav from '$lib/components/SiteNav.svelte';
+</script>
+
 <svelte:head>
   <title>Methodology - Quiz The Vote</title>
   <meta name="description" content="Scientific methodology behind the Social Value Orientation framework used in our voter-candidate matching algorithm.">
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50">
-  <!-- Header -->
-  <header class="bg-white shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 py-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <a href="/" class="text-2xl font-bold text-gray-900">🗳️ Quiz The Vote</a>
-        </div>
-        <nav class="flex space-x-6">
-          <a href="/" class="text-gray-600 hover:text-gray-900">Demo</a>
-          <a href="/newsroom.html" class="text-gray-600 hover:text-gray-900">For Newsrooms</a>
-          <a href="/about.html" class="text-gray-600 hover:text-gray-900">About</a>
-          <a href="/methodology.html" class="text-blue-600 font-medium">Methodology</a>
-        </nav>
-      </div>
-    </div>
-  </header>
+  <SiteNav current="methodology" />
 
   <main class="max-w-4xl mx-auto px-4 py-12">
     <div class="bg-white rounded-xl shadow-lg p-8">
@@ -141,10 +131,10 @@
           <h3 class="text-lg font-semibold mb-4">Experience the difference</h3>
           <p class="mb-4">See how SVO-based matching provides deeper insights than traditional political quizzes.</p>
           <div class="space-x-4">
-            <a href="/?svo=true&demo=true" class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700">
+            <a href="{base}/?svo=true&demo=true" class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700">
               Try SVO Demo
             </a>
-            <a href="/newsroom.html" class="border border-green-600 text-green-600 px-6 py-2 rounded-lg font-semibold hover:bg-green-50">
+            <a href="{base}/newsroom" class="border border-green-600 text-green-600 px-6 py-2 rounded-lg font-semibold hover:bg-green-50">
               Create Your Quiz
             </a>
           </div>

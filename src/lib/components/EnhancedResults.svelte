@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Candidate, QuizData, QuizDataSVO } from '$lib/sheets';
-  import type { UserAnswer, UserAnswerSVO } from '$lib/scorer';
+  import type { Candidate, QuizDataSVO, QuestionSVO } from '$lib/sheets';
+  import type { UserAnswerSVO } from '$lib/scorer';
   import { calculateQuestionSimilarity } from '$lib/scorer';
   
   export let candidates: Array<Candidate & { 
@@ -8,8 +8,8 @@
     topicMatches?: { topicId: string, topicName: string, matchPercentage: number }[] 
   }>;
   export let expandedCandidateId: string | null = null;
-  export let quizData: QuizData | QuizDataSVO | null = null;
-  export let userAnswers: UserAnswer[] | UserAnswerSVO[] = [];
+  export let quizData: QuizDataSVO | null = null;
+  export let userAnswers: UserAnswerSVO[] = [];
   
   // State for showing detailed answers
   let showingAnswers: { [key: string]: boolean } = {};
@@ -29,22 +29,19 @@
     }
   }
   
-  // Get real questions for a specific topic
+  // Get real questions for a specific topic. Inactive questions were never
+  // asked, so showing them here reports them as unanswered by everyone.
   function getTopicQuestions(topicId: string) {
     if (!quizData) return [];
-    return quizData.questions.filter(q => q.topic === topicId);
+    return quizData.questions.filter(
+      q => q.topic === topicId && (q as QuestionSVO).active !== false
+    );
   }
   
   // Get user's actual answer for a question
   function getUserAnswer(questionId: string) {
     const userAnswer = userAnswers.find(a => a.questionId === questionId);
     return userAnswer ? userAnswer.value : 'No answer';
-  }
-  
-  // Get question by ID to access its type
-  function getQuestion(questionId: string) {
-    if (!quizData) return null;
-    return quizData.questions.find(q => q.id === questionId);
   }
   
   // Get candidate's actual answer for a question
@@ -234,12 +231,14 @@
                     {#if showingAnswers[`${candidate.id}-${topicMatch.topicId}`]}
                       <div class="ml-4 space-y-3">
                         {#each getTopicQuestions(topicMatch.topicId) as question}
+                          {@const questionType = question.type ?? ''}
+                          {@const questionOptions = (question as QuestionSVO).options}
                           {@const userAnswer = getUserAnswer(question.id)}
                           {@const candidateAnswer = getCandidateAnswer(candidate.id, question.id)}
-                          {@const formattedUserAnswer = formatAnswer(userAnswer, question.type, question)}
-                          {@const formattedCandidateAnswer = formatAnswer(candidateAnswer, question.type, question)}
+                          {@const formattedUserAnswer = formatAnswer(userAnswer, questionType, question)}
+                          {@const formattedCandidateAnswer = formatAnswer(candidateAnswer, questionType, question)}
                           {@const isNoAnswer = candidateAnswer === 'Did not answer'}
-                          {@const similarityScore = !isNoAnswer ? calculateQuestionSimilarity(userAnswer, candidateAnswer, question.type, question.options) : 0}
+                          {@const similarityScore = !isNoAnswer ? calculateQuestionSimilarity(userAnswer, candidateAnswer, questionType, questionOptions) : 0}
                           {@const matchPercent = Math.round(similarityScore * 100)}
                           
                           <div class="p-3 rounded-lg border border-gray-300" style="{

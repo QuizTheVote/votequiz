@@ -1,6 +1,11 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  
+  import { base } from '$app/paths';
+  import SiteNav from '$lib/components/SiteNav.svelte';
+
+  // The sheet newsrooms copy. Must stay in step with the Copy Template button on
+  // quizthevote.com/build-your-quiz/, which is the flow most newsrooms use.
+  const TEMPLATE_SHEET_ID = '1B08mC5xl_crFRbNnOIKnPWvlSl1U9v_NDeLq73wa3o4';
+
   let sheetUrl = '';
   let embedCode = '';
   let previewUrl = '';
@@ -15,38 +20,52 @@
     }
   }
   
-  // Extract sheet ID from various Google Sheets URL formats
+  // Extract sheet ID from various Google Sheets URL formats.
+  //
+  // A "Publish to web" URL carries an opaque 2PACX token in /d/e/, not the sheet
+  // id, and the quiz cannot load from it. Since the setup instructions ask people
+  // to publish their sheet, that URL is close at hand and easy to paste by
+  // mistake, so it is detected and named rather than silently accepted.
   function extractSheetId(url: string): string | null {
-    // Remove any whitespace
     url = url.trim();
-    
+
     const patterns = [
-      // Published: /spreadsheets/d/e/LONGER_ID/anything  
-      /\/spreadsheets\/d\/e\/([a-zA-Z0-9_-]+)/,
-      
       // Standard: /spreadsheets/d/ID/anything
       /\/spreadsheets\/d\/([^\/\?\#]+)/,
-      
+
       // Legacy: ?key=ID or &key=ID
       /[?&]key=([^&\#]+)/,
-      
+
       // Generic docs.google.com with id parameter
       /[?&]id=([^&\#]+)/
     ];
-    
+
     for (const pattern of patterns) {
       const match = url.match(pattern);
-      if (match && match[1]) {
+      if (match && match[1] && !match[1].startsWith('e/')) {
         return match[1];
       }
     }
     return null;
+  }
+
+  function isPublishedUrl(url: string): boolean {
+    return /\/spreadsheets\/d\/e\//.test(url) || url.includes('2PACX');
   }
   
   // Generate embed code when user enters sheet URL
   function generateEmbedCode() {
     if (!sheetUrl.trim()) return;
     
+    if (isPublishedUrl(sheetUrl)) {
+      alert(
+        'That is the "Publish to web" URL, which does not contain your sheet ID.\n\n' +
+          'Open your sheet normally and copy the URL from your browser\'s address bar. ' +
+          'It looks like:\nhttps://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit'
+      );
+      return;
+    }
+
     const sheetId = extractSheetId(sheetUrl);
     if (!sheetId) {
       alert('❌ Invalid Google Sheets URL\n\nPlease make sure you\'re using a URL that looks like:\n• https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit\n• https://docs.google.com/spreadsheet/ccc?key=YOUR_SHEET_ID');
@@ -68,11 +87,6 @@
     
     showPreview = true;
     step = 3;
-    
-    // Log for debugging (remove in production)
-    console.log('Sheet URL:', sheetUrl);
-    console.log('Extracted Sheet ID:', sheetId);
-    console.log('Generated Quiz URL:', previewUrl);
   }
   
   function copyToClipboard(text: string) {
@@ -82,9 +96,7 @@
   }
   
   function copyTemplate() {
-    // For now, open the template in a new tab
-    // TODO: Implement Google Sheets API to actually copy the sheet
-    window.open('https://docs.google.com/spreadsheets/d/1XtS_4-k5yDvgBT_CAqYR9nsUXK9B5aREZPKaALF2LsE/copy', '_blank');
+    window.open(`https://docs.google.com/spreadsheets/d/${TEMPLATE_SHEET_ID}/copy`, '_blank');
     step = 2;
   }
 </script>
@@ -95,22 +107,7 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-  <!-- Header -->
-  <header class="bg-white shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 py-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <h1 class="text-2xl font-bold text-gray-900">🗳️ Quiz The Vote</h1>
-          <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">For Newsrooms</span>
-        </div>
-        <nav class="flex space-x-6">
-          <a href="/" class="text-gray-600 hover:text-gray-900">Demo</a>
-          <a href="/about.html" class="text-gray-600 hover:text-gray-900">About</a>
-          <a href="/methodology.html" class="text-gray-600 hover:text-gray-900">Methodology</a>
-        </nav>
-      </div>
-    </div>
-  </header>
+  <SiteNav current="newsroom" badge="For Newsrooms" />
 
   <main class="max-w-4xl mx-auto px-4 py-12">
     <!-- Hero Section -->
@@ -353,10 +350,10 @@
       <h2 class="text-2xl font-bold mb-4">Questions? Need Help?</h2>
       <p class="mb-6">We're here to help you engage voters with meaningful candidate comparisons.</p>
       <div class="space-x-4">
-        <a href="/methodology.html" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100">
+        <a href="{base}/methodology" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100">
           Learn About Our Methodology
         </a>
-        <a href="/?svo=true&demo=true" class="border border-white text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">
+        <a href="{base}/?svo=true&demo=true" class="border border-white text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">
           Try the Demo
         </a>
       </div>
