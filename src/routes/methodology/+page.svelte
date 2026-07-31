@@ -8,12 +8,12 @@
   <meta name="description" content="Scientific methodology behind the Social Value Orientation framework used in our voter-candidate matching algorithm.">
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-ink-50">
   <SiteNav current="methodology" />
 
   <main class="max-w-4xl mx-auto px-4 py-12">
     <div class="bg-white rounded-xl shadow-lg p-8">
-      <h1 class="text-4xl font-bold text-gray-900 mb-8">Scientific Methodology</h1>
+      <h1 class="text-4xl font-bold text-ink-900 mb-8">Scientific Methodology</h1>
       
       <div class="prose prose-lg max-w-none">
         <h2>Social Value Orientation (SVO) Framework</h2>
@@ -27,15 +27,15 @@
         
         <div class="grid md:grid-cols-3 gap-6 my-8">
           <div class="border rounded-lg p-4">
-            <h3 class="font-semibold text-blue-600 mb-2">Prosocial</h3>
+            <h3 class="font-semibold text-brand-600 mb-2">Prosocial</h3>
             <p class="text-sm">Maximizes collective outcomes and cooperation. Values fairness, equality, and community benefit.</p>
           </div>
           <div class="border rounded-lg p-4">
-            <h3 class="font-semibold text-green-600 mb-2">Individualistic</h3>
+            <h3 class="font-semibold text-ink-700 mb-2">Individualistic</h3>
             <p class="text-sm">Focuses on personal outcomes and self-reliance. Values independence, personal achievement, and merit-based systems.</p>
           </div>
           <div class="border rounded-lg p-4">
-            <h3 class="font-semibold text-red-600 mb-2">Competitive</h3>
+            <h3 class="font-semibold text-sand-700 mb-2">Competitive</h3>
             <p class="text-sm">Seeks relative advantage over others. Values winning, dominance, and zero-sum thinking.</p>
           </div>
         </div>
@@ -58,7 +58,7 @@
         </p>
 
         <h3>Multi-Type Question Support</h3>
-        <div class="bg-gray-50 p-4 rounded-lg my-4">
+        <div class="bg-ink-50 p-4 rounded-lg my-4">
           <ul class="space-y-2 text-sm">
             <li><strong>Scale Questions:</strong> Cosine similarity for ordinal responses (1-5 agreement scales)</li>
             <li><strong>Categorical Questions:</strong> Exact matching for single-choice responses</li>
@@ -92,29 +92,29 @@
         <h2>Advantages Over Traditional Political Quizzes</h2>
         
         <div class="overflow-x-auto my-8">
-          <table class="w-full border-collapse border border-gray-300">
+          <table class="w-full border-collapse border border-ink-300">
             <thead>
-              <tr class="bg-gray-100">
-                <th class="border border-gray-300 p-3 text-left">Traditional Quizzes</th>
-                <th class="border border-gray-300 p-3 text-left">SVO-Based Approach</th>
+              <tr class="bg-ink-100">
+                <th class="border border-ink-300 p-3 text-left">Traditional Quizzes</th>
+                <th class="border border-ink-300 p-3 text-left">SVO-Based Approach</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td class="border border-gray-300 p-3">Policy position matching</td>
-                <td class="border border-gray-300 p-3">Fundamental value alignment</td>
+                <td class="border border-ink-300 p-3">Policy position matching</td>
+                <td class="border border-ink-300 p-3">Fundamental value alignment</td>
               </tr>
               <tr>
-                <td class="border border-gray-300 p-3">Partisan language and framing</td>
-                <td class="border border-gray-300 p-3">Value-neutral scenarios</td>
+                <td class="border border-ink-300 p-3">Partisan language and framing</td>
+                <td class="border border-ink-300 p-3">Value-neutral scenarios</td>
               </tr>
               <tr>
-                <td class="border border-gray-300 p-3">Surface-level preferences</td>
-                <td class="border border-gray-300 p-3">Predictive of actual behavior</td>
+                <td class="border border-ink-300 p-3">Surface-level preferences</td>
+                <td class="border border-ink-300 p-3">Predictive of actual behavior</td>
               </tr>
               <tr>
-                <td class="border border-gray-300 p-3">Culture-specific content</td>
-                <td class="border border-gray-300 p-3">Cross-culturally valid</td>
+                <td class="border border-ink-300 p-3">Culture-specific content</td>
+                <td class="border border-ink-300 p-3">Cross-culturally valid</td>
               </tr>
             </tbody>
           </table>
@@ -127,14 +127,14 @@
           matching experience.
         </p>
 
-        <div class="mt-12 p-6 bg-green-50 rounded-lg">
+        <div class="mt-12 p-6 bg-brand-50 rounded-lg">
           <h3 class="text-lg font-semibold mb-4">Experience the difference</h3>
           <p class="mb-4">See how SVO-based matching provides deeper insights than traditional political quizzes.</p>
           <div class="space-x-4">
-            <a href="{base}/?svo=true&demo=true" class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700">
+            <a href="{base}/?svo=true&demo=true" class="bg-brand-500 text-white px-6 py-2 rounded-pill font-semibold hover:bg-brand-600">
               Try SVO Demo
             </a>
-            <a href="{base}/newsroom" class="border border-green-600 text-green-600 px-6 py-2 rounded-lg font-semibold hover:bg-green-50">
+            <a href="{base}/newsroom" class="border border-brand-500 text-brand-600 px-6 py-2 rounded-pill font-semibold hover:bg-brand-50">
               Create Your Quiz
             </a>
           </div>

@@ -106,16 +106,16 @@
   <meta name="description" content="Help voters connect with candidates based on policy positions, not party politics. Easy-to-use tool for newsrooms - no coding required.">
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+<div class="min-h-screen bg-gradient-to-br from-brand-50 to-brand-100">
   <SiteNav current="newsroom" badge="For Newsrooms" />
 
   <main class="max-w-4xl mx-auto px-4 py-12">
     <!-- Hero Section -->
     <div class="text-center mb-16">
-      <h1 class="text-5xl font-bold text-gray-900 mb-6">
+      <h1 class="text-5xl font-bold text-ink-900 mb-6">
         Help Voters Connect with Candidates
       </h1>
-      <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+      <p class="text-xl text-ink-600 mb-8 max-w-3xl mx-auto">
         Give your newsroom a powerful tool to engage readers beyond political spin and party labels. 
         Help voters discover candidates based on actual policy positions and local issues that matter to your community.
       </p>
@@ -123,19 +123,19 @@
         <h3 class="text-lg font-semibold mb-4">Move Beyond Party Politics</h3>
         <div class="grid md:grid-cols-2 gap-4 text-sm">
           <div class="flex items-start space-x-2">
-            <span class="text-green-500">✓</span>
+            <span class="text-brand-500">✓</span>
             <span>Policy over party labels</span>
           </div>
           <div class="flex items-start space-x-2">
-            <span class="text-green-500">✓</span>
+            <span class="text-brand-500">✓</span>
             <span>Local issues focus</span>
           </div>
           <div class="flex items-start space-x-2">
-            <span class="text-green-500">✓</span>
+            <span class="text-brand-500">✓</span>
             <span>No coding required</span>
           </div>
           <div class="flex items-start space-x-2">
-            <span class="text-green-500">✓</span>
+            <span class="text-brand-500">✓</span>
             <span>Ready in minutes</span>
           </div>
         </div>
@@ -147,19 +147,19 @@
       <!-- Step 1: Copy Template -->
       <div class="bg-white rounded-xl shadow-lg p-8">
         <div class="flex items-center mb-6">
-          <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">1</div>
+          <div class="bg-brand-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">1</div>
           <h2 class="text-2xl font-bold">Copy Our Template</h2>
           {#if step >= 2}
-            <span class="ml-4 text-green-500">✓ Complete</span>
+            <span class="ml-4 text-brand-500">✓ Complete</span>
           {/if}
         </div>
         
-        <p class="text-gray-600 mb-6">
+        <p class="text-ink-600 mb-6">
           Start with our template designed specifically for newsrooms to create meaningful voter-candidate connections. 
           Add your local candidates and customize questions for the issues that matter most in your community.
         </p>
         
-        <div class="bg-blue-50 rounded-lg p-6 mb-6">
+        <div class="bg-brand-50 rounded-lg p-6 mb-6">
           <h4 class="font-semibold mb-3">Template includes:</h4>
           <ul class="space-y-2 text-sm">
             <li>• 5 Essential policy questions (quick 2-3 minute quiz)</li>
@@ -173,7 +173,7 @@
         
         <button 
           on:click={copyTemplate}
-          class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-colors"
+          class="bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 rounded-pill font-semibold text-lg transition-colors"
         >
           📋 Copy Template to Your Google Drive
         </button>
@@ -182,14 +182,14 @@
       <!-- Step 2: Customize & Publish -->
       <div class="bg-white rounded-xl shadow-lg p-8" >
         <div class="flex items-center mb-6">
-          <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">2</div>
+          <div class="bg-brand-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">2</div>
           <h2 class="text-2xl font-bold">Customize & Publish Your Sheet</h2>
           {#if step >= 3}
-            <span class="ml-4 text-green-500">✓ Complete</span>
+            <span class="ml-4 text-brand-500">✓ Complete</span>
           {/if}
         </div>
         
-        <div class="space-y-4 text-gray-600">
+        <div class="space-y-4 text-ink-600">
           <p><strong>Make it relevant for your community:</strong></p>
           <ul class="list-disc list-inside space-y-1 ml-4">
             <li><strong>Add local candidates</strong> - Replace samples with your election's actual candidates</li>
@@ -206,8 +206,8 @@
             <li><strong>Copy the URL from your browser's address bar</strong> (not from the publish dialog)</li>
           </ol>
           
-          <div class="mt-3 p-3 bg-red-50 border-l-4 border-red-400">
-            <p class="text-sm text-red-800">
+          <div class="mt-3 p-3 bg-sand-50 border-l-4 border-sand-500">
+            <p class="text-sm text-sand-800">
               🚨 <strong>CRITICAL STEPS:</strong><br>
               <strong>1:</strong> Share → Anyone with the link → Viewer<br>
               <strong>2:</strong> Go to Quiz_Data tab FIRST<br>
@@ -221,17 +221,17 @@
       <!-- Step 3: Generate Embed Code -->
       <div class="bg-white rounded-xl shadow-lg p-8" >
         <div class="flex items-center mb-6">
-          <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">3</div>
+          <div class="bg-brand-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">3</div>
           <h2 class="text-2xl font-bold">Get Your Quiz Link & Embed Code</h2>
         </div>
         
-        <p class="text-gray-600 mb-6">
+        <p class="text-ink-600 mb-6">
           Paste your published Google Sheet URL below to get both a direct link and embed code for your quiz.
         </p>
         
         <div class="space-y-4">
           <div>
-            <label for="sheet-url" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="sheet-url" class="block text-sm font-medium text-ink-700 mb-2">
               Google Sheet URL (after publishing to web)
             </label>
             <input 
@@ -239,14 +239,14 @@
               type="url" 
               bind:value={sheetUrl}
               placeholder="https://docs.google.com/spreadsheets/d/..."
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-4 py-2 border border-ink-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             />
           </div>
           
           <button 
             on:click={generateEmbedCode}
             disabled={!sheetUrl.trim()}
-            class="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+            class="bg-brand-500 hover:bg-brand-600 disabled:bg-ink-400 text-white px-6 py-2 rounded-pill font-semibold transition-colors"
           >
             🚀 Generate Embed Code
           </button>
@@ -257,7 +257,7 @@
       {#if showPreview}
         <div class="bg-white rounded-xl shadow-lg p-8">
           <div class="flex items-center mb-6">
-            <div class="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">✓</div>
+            <div class="bg-brand-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4">✓</div>
             <h2 class="text-2xl font-bold">Your Quiz is Ready!</h2>
           </div>
           
@@ -269,18 +269,18 @@
                 type="text" 
                 value={previewUrl}
                 readonly
-                class="flex-1 px-3 py-2 bg-gray-50 border rounded-lg text-sm"
+                class="flex-1 px-3 py-2 bg-ink-50 border rounded-lg text-sm"
               />
               <button 
                 on:click={() => copyToClipboard(previewUrl)}
-                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm"
+                class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-pill text-sm"
               >
                 Copy
               </button>
               <a 
                 href={previewUrl} 
                 target="_blank"
-                class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm"
+                class="bg-ink-500 hover:bg-ink-600 text-white px-4 py-2 rounded-lg text-sm"
               >
                 Test
               </a>
@@ -295,11 +295,11 @@
                 value={embedCode}
                 readonly
                 rows="3"
-                class="flex-1 px-3 py-2 bg-gray-50 border rounded-lg text-sm font-mono"
+                class="flex-1 px-3 py-2 bg-ink-50 border rounded-lg text-sm font-mono"
               ></textarea>
               <button 
                 on:click={() => copyToClipboard(embedCode)}
-                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm"
+                class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-pill text-sm"
               >
                 Copy
               </button>
@@ -320,9 +320,9 @@
                 on:input={updateEmbedCode}
                 class="flex-1"
               />
-              <span class="text-sm font-mono bg-gray-100 px-2 py-1 rounded">{iframeHeight}px</span>
+              <span class="text-sm font-mono bg-ink-100 px-2 py-1 rounded">{iframeHeight}px</span>
             </div>
-            <p class="text-xs text-gray-600">Adjust if your quiz content appears cut off. Most quizzes work well at 750px.</p>
+            <p class="text-xs text-ink-600">Adjust if your quiz content appears cut off. Most quizzes work well at 750px.</p>
           </div>
 
           <!-- Live Preview -->
@@ -346,14 +346,14 @@
     </div>
 
     <!-- Footer CTA -->
-    <div class="text-center mt-16 p-8 bg-blue-600 text-white rounded-xl">
+    <div class="text-center mt-16 p-8 bg-brand-600 text-white rounded-xl">
       <h2 class="text-2xl font-bold mb-4">Questions? Need Help?</h2>
       <p class="mb-6">We're here to help you engage voters with meaningful candidate comparisons.</p>
       <div class="space-x-4">
-        <a href="{base}/methodology" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100">
+        <a href="{base}/methodology" class="bg-white text-brand-600 px-6 py-2 rounded-lg font-semibold hover:bg-ink-100">
           Learn About Our Methodology
         </a>
-        <a href="{base}/?svo=true&demo=true" class="border border-white text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">
+        <a href="{base}/?svo=true&demo=true" class="border border-white text-white px-6 py-2 rounded-pill font-semibold hover:bg-brand-700">
           Try the Demo
         </a>
       </div>

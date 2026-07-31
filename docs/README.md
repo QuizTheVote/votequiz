@@ -31,6 +31,7 @@ tracked in [`UNKNOWNS.md`](UNKNOWNS.md).
 | `BASE_TEMPLATE_STRUCTURE.md` | Sheet structure reference (Sep 8 2025 — see caveat below) |
 | `KNOWN_ISSUES.md` | Verified bugs and open work, with fixed items kept and dated |
 | `UNKNOWNS.md` | Unverified assumptions, each with a defined test and an owner |
+| `BRAND.md` | Where the colours, fonts and logo came from, and how to regenerate them |
 | `history/` | The `app update 2.0`–`2.5` narrative logs, in order |
 
 `BASE_TEMPLATE_STRUCTURE.md` is mostly accurate but predates two changes: the

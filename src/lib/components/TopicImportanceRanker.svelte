@@ -80,10 +80,10 @@
     if (draggedItem === null || draggedItem === index) return;
     
     const items = document.querySelectorAll('.topic-item');
-    items.forEach(item => item.classList.remove('border-blue-500'));
+    items.forEach(item => item.classList.remove('border-brand-500'));
     
     const targetItem = event.currentTarget as HTMLElement;
-    targetItem.classList.add('border-blue-500');
+    targetItem.classList.add('border-brand-500');
   }
   
   function onDrop(event: DragEvent, index: number) {
@@ -102,7 +102,7 @@
     
     // Reset styles
     const items = document.querySelectorAll('.topic-item');
-    items.forEach(item => item.classList.remove('border-blue-500', 'opacity-50'));
+    items.forEach(item => item.classList.remove('border-brand-500', 'opacity-50'));
     
     recalculateWeights();
     draggedItem = null;
@@ -115,12 +115,12 @@
     
     // Reset styles
     const items = document.querySelectorAll('.topic-item');
-    items.forEach(item => item.classList.remove('border-blue-500', 'opacity-50'));
+    items.forEach(item => item.classList.remove('border-brand-500', 'opacity-50'));
   }
   
   function onDragLeave(event: DragEvent) {
     const targetItem = event.currentTarget as HTMLElement;
-    targetItem.classList.remove('border-blue-500');
+    targetItem.classList.remove('border-brand-500');
   }
   
   // Initial calculation of weights if none were provided
@@ -131,14 +131,14 @@
 
 <div class="topic-importance-ranker">
   <h2 class="text-xl font-bold mb-3">Rank Topics By Importance</h2>
-  <p class="text-gray-600 mb-4 text-sm">
+  <p class="text-ink-600 mb-4 text-sm">
     Drag topics to reorder them by importance. Topics at the top will have more influence on your results.
   </p>
   
-  <div class="border border-gray-200 rounded-lg overflow-hidden">
+  <div class="border border-ink-200 rounded-lg overflow-hidden">
     {#each weights as weight, index (weight.topicId)}
       <div 
-        class="topic-item bg-white border-b border-gray-200 last:border-0 hover:bg-blue-50 transition-colors"
+        class="topic-item bg-white border-b border-ink-200 last:border-0 hover:bg-brand-50 transition-colors"
         role="listitem"
         aria-label="Topic {index + 1}: {getTopicName(weight.topicId)}"
       >
@@ -150,7 +150,7 @@
              on:drop={(e) => onDrop(e, index)}
              on:dragend={onDragEnd}
              on:dragleave={onDragLeave}>
-          <div class="absolute left-2 top-1/2 -translate-y-1/2 w-6 text-center text-gray-400 font-bold text-sm">
+          <div class="absolute left-2 top-1/2 -translate-y-1/2 w-6 text-center text-ink-400 font-bold text-sm">
             {index + 1}
           </div>
           
@@ -158,13 +158,13 @@
             <div class="overflow-hidden">
               <div class="font-medium text-base truncate">{getTopicName(weight.topicId)}</div>
               {#if getTopicDescription(weight.topicId)}
-                <div class="text-xs text-gray-500 truncate">{getTopicDescription(weight.topicId)}</div>
+                <div class="text-xs text-ink-500 truncate">{getTopicDescription(weight.topicId)}</div>
               {/if}
             </div>
           </div>
           
           <!-- Desktop: Drag handle -->
-          <div class="ml-2 flex-shrink-0 text-gray-400">
+          <div class="ml-2 flex-shrink-0 text-ink-400">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
             </svg>
@@ -176,11 +176,11 @@
           <!-- Topic Info -->
           <div class="px-4 py-3">
             <div class="flex items-start">
-              <span class="text-gray-400 font-bold text-sm mr-4 mt-0.5 w-6 text-center">{index + 1}</span>
+              <span class="text-ink-400 font-bold text-sm mr-4 mt-0.5 w-6 text-center">{index + 1}</span>
               <div class="flex-1">
                 <div class="font-medium text-sm">{getTopicName(weight.topicId)}</div>
                 {#if getTopicDescription(weight.topicId)}
-                  <div class="text-xs text-gray-500 mt-1 leading-tight">{getTopicDescription(weight.topicId)}</div>
+                  <div class="text-xs text-ink-500 mt-1 leading-tight">{getTopicDescription(weight.topicId)}</div>
                 {/if}
               </div>
             </div>
@@ -189,7 +189,7 @@
           <!-- Mobile Controls - Centered below -->
           <div class="px-4 pb-3 flex justify-center space-x-4">
             <button 
-              class="flex items-center px-3 py-2 bg-gray-100 rounded border text-xs font-medium {index === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-100 hover:text-blue-600 active:bg-blue-200'}"
+              class="flex items-center px-3 py-2 bg-ink-100 rounded border text-xs font-medium {index === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-brand-100 hover:text-brand-600 active:bg-brand-200'}"
               on:click={() => moveItem(index, index - 1)}
               disabled={index === 0}
             >
@@ -199,7 +199,7 @@
               Move Up
             </button>
             <button 
-              class="flex items-center px-3 py-2 bg-gray-100 rounded border text-xs font-medium {index === weights.length - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-100 hover:text-blue-600 active:bg-blue-200'}"
+              class="flex items-center px-3 py-2 bg-ink-100 rounded border text-xs font-medium {index === weights.length - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-brand-100 hover:text-brand-600 active:bg-brand-200'}"
               on:click={() => moveItem(index, index + 1)}
               disabled={index === weights.length - 1}
             >
@@ -216,16 +216,16 @@
   
   <div class="mt-4 space-y-2">
     <!-- Mobile Instructions -->
-    <div class="sm:hidden bg-gray-50 p-3 rounded-lg text-xs text-gray-700">
+    <div class="sm:hidden bg-ink-50 p-3 rounded-lg text-xs text-ink-700">
       <p><span class="font-semibold">Mobile:</span> Use "Move Up" and "Move Down" buttons to reorder topics.</p>
     </div>
     
     <!-- Desktop Instructions -->
-    <div class="hidden sm:block bg-gray-50 p-3 rounded-lg text-xs text-gray-700">
+    <div class="hidden sm:block bg-ink-50 p-3 rounded-lg text-xs text-ink-700">
       <p><span class="font-semibold">Desktop:</span> Drag topics to reorder them by importance.</p>
     </div>
     
-    <div class="bg-blue-50 p-3 rounded-lg text-xs text-blue-800">
+    <div class="bg-brand-50 p-3 rounded-lg text-xs text-brand-800">
       <p><span class="font-semibold">How this affects your results:</span> Topics at the top (weight 10) matter more than those at the bottom (weight 1) when calculating your matches.</p>
     </div>
   </div>

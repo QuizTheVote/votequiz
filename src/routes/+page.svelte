@@ -7,6 +7,7 @@
   import TopicImportanceRanker from '$lib/components/TopicImportanceRanker.svelte';
   import EnhancedResults from '$lib/components/EnhancedResults.svelte';
   import QuestionRenderer from '$lib/components/questions/QuestionRenderer.svelte';
+  import Navbar from '$lib/components/Navbar.svelte';
 
   // Configuration variables - now determined by URL parameters
   let sheetId: string | null = null;
@@ -185,11 +186,13 @@
   }
 </script>
 
+<Navbar />
+
 <main class="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-3xl">
   {#if visibleDiagnostics.length > 0}
     <!-- Deliberately visible to voters when severity is error: a misconfigured
          sheet otherwise produces a plausible-looking but incorrect quiz. -->
-    <div class="mb-6 rounded border border-amber-400 bg-amber-50 px-4 py-3 text-amber-900">
+    <div class="mb-6 rounded border border-sand-400 bg-sand-50 px-4 py-3 text-sand-900">
       <p class="font-bold">
         {sheetErrors.length > 0
           ? 'This quiz has a spreadsheet problem that affects its results'
@@ -207,7 +210,7 @@
     <div class="flex flex-col items-center justify-center py-20">
       <div class="text-center">
         <h1 class="text-2xl font-bold mb-4">Loading Quiz...</h1>
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500"></div>
       </div>
     </div>
   {:else if error}
@@ -217,7 +220,7 @@
     </div>
     
     {#if !useSampleData}
-      <div class="bg-blue-50 border border-blue-300 text-blue-900 px-4 py-3 rounded">
+      <div class="bg-brand-50 border border-brand-300 text-brand-900 px-4 py-3 rounded">
         <p class="font-bold">Checklist for setting up a sheet</p>
         <ol class="list-decimal ml-6 mt-2 space-y-2">
           <li>Start from the Quiz The Vote base template rather than a blank sheet.</li>
@@ -232,20 +235,20 @@
   {:else if currentQuestionIndex === -1}
     <!-- Welcome Screen -->
     <div class="text-center">
-      <p class="mb-8 text-base sm:text-lg text-gray-700">
+      <p class="mb-8 text-base sm:text-lg text-ink-700">
         Discover which candidates align with your values and priorities.
         Answer questions to see your personalized matches.
       </p>
       
       <button 
-        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-base sm:text-lg"
+        class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-8 rounded-pill text-base sm:text-lg transition-colors"
         on:click={startQuiz}
       >
         Start Quiz
       </button>
       
       {#if useSampleData && devMode}
-        <div class="mt-8 p-3 bg-yellow-100 text-yellow-800 rounded text-sm">
+        <div class="mt-8 p-3 bg-sand-100 text-sand-800 rounded text-sm">
           <p class="font-medium mb-2">Sample data</p>
           <div class="text-xs space-y-1">
             <p>• Add <code>?sheet=YOUR_SHEET_ID</code> to load a real Google Sheet</p>
@@ -258,9 +261,9 @@
     <!-- Topic Importance Ranking Screen -->
     <div>
       <div class="mb-6">
-        <div class="w-full bg-gray-200 rounded-full h-2.5">
+        <div class="w-full bg-ink-200 rounded-full h-2.5">
           <div 
-            class="bg-blue-600 h-2.5 rounded-full" 
+            class="bg-brand-600 h-2.5 rounded-full" 
             style="width: 90%"
           ></div>
         </div>
@@ -273,13 +276,13 @@
       <div class="mb-6">
         <div class="flex justify-between items-center mb-4">
           <button 
-            class="text-blue-500 hover:text-blue-700 text-sm sm:text-base"
+            class="text-brand-500 hover:text-brand-700 text-sm sm:text-base"
             on:click={goBack}
           >
             &larr; Back
           </button>
           <button 
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-3 sm:px-4 rounded text-sm sm:text-base"
+            class="bg-brand-500 hover:bg-brand-700 text-white font-bold py-2 px-3 sm:px-4 rounded-pill text-sm sm:text-base"
             on:click={calculateAndShowResults}
           >
             <span class="hidden sm:inline">See Results &rarr;</span>
@@ -289,7 +292,7 @@
         
         <div class="text-center">
           <h2 class="text-lg sm:text-2xl font-bold mb-3">Rank Topics</h2>
-          <p class="text-sm sm:text-base text-gray-600">
+          <p class="text-sm sm:text-base text-ink-600">
             Which topics matter most to you? Rank them to get more accurate results.
           </p>
         </div>
@@ -305,9 +308,9 @@
     <!-- Enhanced Results Screen -->
     <div>
       <div class="mb-6">
-        <div class="w-full bg-gray-200 rounded-full h-2.5">
+        <div class="w-full bg-ink-200 rounded-full h-2.5">
           <div 
-            class="bg-blue-600 h-2.5 rounded-full" 
+            class="bg-brand-600 h-2.5 rounded-full" 
             style="width: 100%"
           ></div>
         </div>
@@ -318,13 +321,13 @@
       
       <div class="mb-8 flex justify-between items-center">
         <button 
-          class="text-blue-500 hover:text-blue-700 text-sm sm:text-base"
+          class="text-brand-500 hover:text-brand-700 text-sm sm:text-base"
           on:click={goBack}
         >
           &larr; Back
         </button>
         <button 
-          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-3 sm:px-4 rounded text-sm sm:text-base"
+          class="bg-brand-500 hover:bg-brand-700 text-white font-bold py-2 px-3 sm:px-4 rounded-pill text-sm sm:text-base"
           on:click={restartQuiz}
         >
           Restart
@@ -343,13 +346,13 @@
       
       <!-- Non-Participating Candidates -->
       {#if nonParticipatingCandidates.length > 0}
-        <div class="mt-8 pt-6 border-t border-gray-200">
-          <h2 class="text-lg font-semibold mb-4 text-gray-700">Additional Candidates</h2>
-          <p class="text-sm text-gray-600 mb-4">These candidates did not provide sufficient responses for matching.</p>
+        <div class="mt-8 pt-6 border-t border-ink-200">
+          <h2 class="text-lg font-semibold mb-4 text-ink-700">Additional Candidates</h2>
+          <p class="text-sm text-ink-600 mb-4">These candidates did not provide sufficient responses for matching.</p>
           
           <div class="space-y-3">
             {#each nonParticipatingCandidates as candidate}
-              <div class="border rounded-lg p-4 bg-gray-50">
+              <div class="border rounded-lg p-4 bg-ink-50">
                 <div class="flex items-center">
                   <div class="relative w-12 h-12 mr-3">
                     {#if candidate.photo}
@@ -360,19 +363,19 @@
                         on:error={handleImageError}
                         loading="lazy"
                       />
-                      <div class="hidden absolute w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                        <span class="text-gray-500 text-sm">{candidate.name.charAt(0)}</span>
+                      <div class="hidden absolute w-12 h-12 rounded-full bg-ink-200 flex items-center justify-center">
+                        <span class="text-ink-500 text-sm">{candidate.name.charAt(0)}</span>
                       </div>
                     {:else}
-                      <div class="absolute w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                        <span class="text-gray-500 text-sm">{candidate.name.charAt(0)}</span>
+                      <div class="absolute w-12 h-12 rounded-full bg-ink-200 flex items-center justify-center">
+                        <span class="text-ink-500 text-sm">{candidate.name.charAt(0)}</span>
                       </div>
                     {/if}
                   </div>
                   <div class="flex-1">
                     <h3 class="text-base font-semibold">{candidate.name}</h3>
-                    <p class="text-sm text-gray-600">{candidate.party}</p>
-                    <p class="text-xs text-gray-500 mt-1">
+                    <p class="text-sm text-ink-600">{candidate.party}</p>
+                    <p class="text-xs text-ink-500 mt-1">
                       {#if (candidate.answeredQuestions || 0) === 0}
                         Did not respond to survey
                       {:else}
@@ -385,7 +388,7 @@
                       href={candidate.link_url} 
                       target="_blank"
                       rel="noopener noreferrer"
-                      class="ml-3 text-xs text-blue-600 hover:text-blue-800 underline"
+                      class="ml-3 text-xs text-brand-600 hover:text-brand-800 underline"
                     >
                       {candidate.link_text || 'Visit Website'}
                     </a>
@@ -398,9 +401,9 @@
       {/if}
       
       <!-- Attribution -->
-      <div class="text-center mt-8 pt-6 border-t border-gray-200">
-        <p class="text-sm text-gray-600">
-          Powered by <a href="https://www.quizthevote.com" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium">QuizTheVote</a>
+      <div class="text-center mt-8 pt-6 border-t border-ink-200">
+        <p class="text-sm text-ink-600">
+          Powered by <a href="https://www.quizthevote.com" target="_blank" class="text-brand-600 hover:text-brand-800 font-medium">QuizTheVote</a>
         </p>
       </div>
     </div>
@@ -408,9 +411,9 @@
     <!-- Question Screen -->
     <div>
       <div class="mb-6">
-        <div class="w-full bg-gray-200 rounded-full h-2.5">
+        <div class="w-full bg-ink-200 rounded-full h-2.5">
           <div 
-            class="bg-blue-600 h-2.5 rounded-full" 
+            class="bg-brand-600 h-2.5 rounded-full" 
             style="width: {((currentQuestionIndex + 1) / (activeQuestions.length + 2)) * 100}%"
           ></div>
         </div>
@@ -421,7 +424,7 @@
       
       <div class="mb-6 flex justify-between items-center">
         <button 
-          class="text-blue-500 hover:text-blue-700"
+          class="text-brand-500 hover:text-brand-700"
           on:click={goBack}
         >
           &larr; Back
@@ -429,7 +432,7 @@
         <h2 class="text-xl font-medium text-center">
           {#if currentQuestion.topic && quizData?.topics}
             {#if quizData.topics.find(t => t.id === currentQuestion.topic)}
-              <span class="text-sm font-normal text-blue-600">
+              <span class="text-sm font-normal text-brand-600">
                 {quizData.topics.find(t => t.id === currentQuestion.topic)?.name}
               </span>
             {/if}
@@ -451,6 +454,6 @@
 
 <style>
   :global(body) {
-    @apply bg-gray-50;
+    @apply bg-ink-50;
   }
 </style>
