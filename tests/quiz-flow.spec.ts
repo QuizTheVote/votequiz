@@ -88,16 +88,24 @@ test.describe('SVO mode, with inactive questions in the sheet', () => {
 	});
 });
 
-test.describe('non-SVO mode', () => {
-	test('ranks candidates instead of filing them all as non-responders', async ({ page }) => {
+test.describe('without the svo parameter', () => {
+	// This is what the bare production URL and any embed that forgets the flag
+	// resolve to. It used to take a separate Tabletop code path that could not
+	// work, and reported every candidate as a non-responder with no percentage.
+	test('behaves identically to the svo path', async ({ page }) => {
 		await page.goto('/?demo=true');
-		await completeQuiz(page, 9);
+		await completeQuiz(page, 5);
 
 		await expectMatchPercentages(page);
-
-		// These scorers report no participation rate. Absent that evidence every
-		// candidate once landed under "Additional Candidates" with no score.
 		await expect(page.getByText('Additional Candidates')).toHaveCount(0);
+	});
+});
+
+test.describe('sheet diagnostics', () => {
+	test('stay silent when the data is sound', async ({ page }) => {
+		await page.goto('/?svo=true&demo=true&debug=true');
+		await expect(page.getByRole('button', { name: 'Start Quiz' })).toBeVisible();
+		await expect(page.getByText(/spreadsheet problem|Spreadsheet advisories/i)).toHaveCount(0);
 	});
 });
 

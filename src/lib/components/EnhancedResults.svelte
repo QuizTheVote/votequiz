@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Candidate, QuizData, QuizDataSVO, QuestionSVO } from '$lib/sheets';
-  import type { UserAnswer, UserAnswerSVO } from '$lib/scorer';
+  import type { Candidate, QuizDataSVO, QuestionSVO } from '$lib/sheets';
+  import type { UserAnswerSVO } from '$lib/scorer';
   import { calculateQuestionSimilarity } from '$lib/scorer';
   
   export let candidates: Array<Candidate & { 
@@ -8,8 +8,8 @@
     topicMatches?: { topicId: string, topicName: string, matchPercentage: number }[] 
   }>;
   export let expandedCandidateId: string | null = null;
-  export let quizData: QuizData | QuizDataSVO | null = null;
-  export let userAnswers: UserAnswer[] | UserAnswerSVO[] = [];
+  export let quizData: QuizDataSVO | null = null;
+  export let userAnswers: UserAnswerSVO[] = [];
   
   // State for showing detailed answers
   let showingAnswers: { [key: string]: boolean } = {};
