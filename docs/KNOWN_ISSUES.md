@@ -144,6 +144,45 @@ the in-app version's Copy Template button pointed at sheet
 Worth deciding whether the in-app `/newsroom` page or the WordPress page is the
 real builder, and deleting the other.
 
+### 12. The public methodology page describes an algorithm the app does not use
+
+Needs your decision, because it is published editorial copy about how the tool
+works, and newsrooms cite it.
+
+`src/routes/methodology/+page.svelte:63` states:
+
+> **Scale Questions:** Cosine similarity for ordinal responses (1-5 agreement scales)
+
+The `agree_5` scoring in `src/lib/scorer.ts` is not cosine similarity. It is a
+graduated distance rule:
+
+| Situation | Score |
+| --- | --- |
+| Identical answers | 1.0 |
+| One step apart, both on the agree side (4 and 5) or both on the disagree side (1 and 2) | 0.5 |
+| One step apart but crossing neutral (2↔3, 3↔4) | 0 |
+| Two or more steps apart | 0 |
+
+Line 77 also states that raw scores are "transformed to percentages using
+research-validated functions that spread" the results. In fact the final figure is
+`Math.round(rawScore * 100)`, where `rawScore` is the plain mean of the
+per-question scores above, weighted by topic importance when the voter has ranked
+topics. There is no normalisation step.
+
+Two claims on that page **are** accurate: Jaccard similarity for multiple choice,
+and topic weighting applied to the final score.
+
+This is not a regression. The SVO scorer has never used cosine similarity; the
+cosine helpers belonged to the legacy path, which is why deleting that path left
+them with no callers. The page appears to describe the pre-SVO implementation.
+
+The distance rule is defensible and arguably better than cosine similarity for
+this purpose, since treating "somewhat agree" and "neutral" as a non-match is a
+deliberate editorial choice. The problem is only that the page does not say so.
+Either the copy should describe the real rule, or the scoring should change to
+match the copy. Given that a matching percentage is the tool's central claim to
+readers, this is worth settling before the next election cycle.
+
 ### 11. Two `<main>` elements on the quiz page
 
 `src/routes/+layout.svelte` and `src/routes/+page.svelte` each declare one, so
