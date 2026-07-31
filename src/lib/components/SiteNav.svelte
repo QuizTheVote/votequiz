@@ -1,5 +1,6 @@
 <script lang="ts">
   import { base } from '$app/paths';
+  import BrandMark from './BrandMark.svelte';
 
   /** Which link to mark as the current page. */
   export let current: 'demo' | 'newsroom' | 'about' | 'methodology' | null = null;
@@ -21,9 +22,12 @@
   <div class="max-w-7xl mx-auto px-4 py-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center space-x-4">
-        <a href="{base}/" class="text-2xl font-bold text-gray-900">🗳️ Quiz The Vote</a>
+        <a href="{base}/" class="flex items-center gap-2 font-display text-2xl font-bold text-ink-900">
+          <BrandMark class="h-8 w-auto" />
+          Quiz The Vote
+        </a>
         {#if badge}
-          <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
+          <span class="bg-brand-50 text-brand-700 px-2 py-1 rounded-full text-sm font-medium">
             {badge}
           </span>
         {/if}
@@ -33,8 +37,8 @@
           <a
             href={link.href}
             class={link.key === current
-              ? 'text-blue-600 font-medium'
-              : 'text-gray-600 hover:text-gray-900'}
+              ? 'text-brand-600 font-medium'
+              : 'text-ink-600 hover:text-ink-900'}
             aria-current={link.key === current ? 'page' : undefined}
           >
             {link.label}
