@@ -44,12 +44,6 @@
     return userAnswer ? userAnswer.value : 'No answer';
   }
   
-  // Get question by ID to access its type
-  function getQuestion(questionId: string) {
-    if (!quizData) return null;
-    return quizData.questions.find(q => q.id === questionId);
-  }
-  
   // Get candidate's actual answer for a question
   function getCandidateAnswer(candidateId: string, questionId: string) {
     if (!quizData) return 'No data';

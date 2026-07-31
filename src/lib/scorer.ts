@@ -10,129 +10,14 @@ export interface UserTopicWeight {
   weight: number;
 }
 
-/**
- * Calculates the cosine similarity between two vectors
- * @param a First vector
- * @param b Second vector
- * @returns Cosine similarity (0-1 where 1 is perfect match)
- */
-export function cosineSimilarity(a: number[], b: number[]): number {
-  if (a.length !== b.length) {
-    throw new Error('Vectors must be of the same length');
-  }
-
-  let dotProduct = 0;
-  let normA = 0;
-  let normB = 0;
-
-  for (let i = 0; i < a.length; i++) {
-    dotProduct += a[i] * b[i];
-    normA += a[i] * a[i];
-    normB += b[i] * b[i];
-  }
-
-  if (normA === 0 || normB === 0) {
-    return 0;
-  }
-
-  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
-}
-
-/**
- * Transforms a raw cosine similarity score (0-1) to an absolute percentage (0-100)
- * This provides an absolute percentage match regardless of other candidates
- * @param similarity Raw cosine similarity (0-1)
- * @returns Percentage match (0-100)
- */
-export function absoluteCosineSimilarityToPercentage(similarity: number): number {
-  // For perfectly identical answers (extremely rare)
-  if (similarity >= 0.9999) return 100;
-  
-  // For completely opposite answers
-  if (similarity <= 0) return 20;
-  
-  // Apply a linear transformation with adjusted range to spread out results
-  // Map similarity of 0-1 to a percentage of 20-100
-  // This creates more differentiation in the higher ranges
-  // The formula maps:
-  // 0 -> 20%
-  // 0.25 -> 40%
-  // 0.5 -> 60%
-  // 0.75 -> 80%
-  // 1.0 -> 100%
-  const percentage = 20 + (similarity * 80);
-  
-  return Math.round(percentage);
-}
-
-/**
- * Transforms a similarity score (0-1) to a more differentiated percentage (0-100)
- * @param similarity Raw similarity score (0-1)
- * @returns Transformed percentage value (0-100)
- */
-export function transformSimilarityToPercentage(similarity: number): number {
-  // Apply a power transformation to amplify differences
-  // Using power of 1.5 to spread out high values more
-  // Then scale to 0-100 range with a minimum of 20% to avoid too low scores
-  const transformed = Math.pow(similarity, 1.5);
-  return Math.round(20 + (transformed * 80));
-}
-
-/**
- * Calculates the weighted cosine similarity between two vectors
- * @param a First vector
- * @param b Second vector
- * @param weights Vector of weights corresponding to each position
- * @returns Weighted cosine similarity (0-1 where 1 is perfect match)
- */
-export function weightedCosineSimilarity(a: number[], b: number[], weights: number[]): number {
-  if (a.length !== b.length || a.length !== weights.length) {
-    throw new Error('Vectors must be of the same length');
-  }
-
-  let dotProduct = 0;
-  let normA = 0;
-  let normB = 0;
-
-  for (let i = 0; i < a.length; i++) {
-    const weight = weights[i] || 1;
-    dotProduct += weight * a[i] * b[i];
-    normA += weight * a[i] * a[i];
-    normB += weight * b[i] * b[i];
-  }
-
-  if (normA === 0 || normB === 0) {
-    return 0;
-  }
-
-  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
-}
-
-/**
- * Applies normalization to a set of scores to ensure greater differentiation
- * @param scores Array of raw scores
- * @returns Array of normalized scores spread across a wider range
- */
-export function normalizeScores(scores: number[]): number[] {
-  const min = Math.min(...scores);
-  const max = Math.max(...scores);
-  
-  // If all values are the same, use absolute scoring instead of defaulting to 50%
-  if (max === min) {
-    // Convert cosine similarity (typically 0-1) to a meaningful percentage
-    // This will vary based on the actual match rather than giving every candidate 50%
-    return scores.map(score => absoluteCosineSimilarityToPercentage(score));
-  }
-  
-  // Apply a normalization that spreads values from 20-100
-  return scores.map(score => {
-    const normalized = 20 + (score - min) / (max - min) * 80;
-    return Math.round(normalized);
-  });
-}
-
 //
 // SVO-BASED SCORING FUNCTIONS
+//
+// The vector-math helpers that used to live here — cosineSimilarity,
+// weightedCosineSimilarity, normalizeScores and two percentage transforms —
+// existed only for the legacy scorers and went with them. SVO scoring compares
+// answers per question through calculateQuestionSimilarity rather than building
+// one vector per candidate, because answers are no longer all numeric.
 //
 
 /**
