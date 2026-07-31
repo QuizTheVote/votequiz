@@ -325,10 +325,7 @@ export function calculateSVOMatches(
     // Calculate participation rate
     const totalActiveQuestions = activeQuestions.length;
     const participationRate = totalActiveQuestions > 0 ? answeredQuestions / totalActiveQuestions : 0;
-    
-    // Debug logging for participation tracking
-    console.log(`📊 ${candidate.name}: answered ${answeredQuestions}/${totalActiveQuestions} questions (${Math.round(participationRate * 100)}% participation)`);
-    
+
     return {
       ...candidate,
       rawScore: averageSimilarity,
@@ -447,10 +444,7 @@ export function calculateWeightedSVOMatches(
     // Calculate participation rate
     const totalActiveQuestions = activeQuestions.length;
     const participationRate = totalActiveQuestions > 0 ? answeredQuestions / totalActiveQuestions : 0;
-    
-    // Debug logging for participation tracking
-    console.log(`📊 ${candidate.name}: answered ${answeredQuestions}/${totalActiveQuestions} questions (${Math.round(participationRate * 100)}% participation)`);
-    
+
     return {
       ...candidate,
       matchPercentage: Math.round(overallMatch * 100),

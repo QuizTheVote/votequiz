@@ -82,20 +82,11 @@
       userAnswers = [...userAnswers, { questionId, value }];
     }
     
-    // Move to next active question
-    console.log(`🔄 NAVIGATION DEBUG:`);
-    console.log(`Current question index: ${currentQuestionIndex}`);
-    console.log(`Active questions length: ${activeQuestions.length}`);
-    console.log(`Current question:`, currentQuestion);
-    console.log(`Next question would be:`, activeQuestions[currentQuestionIndex + 1]);
-    
     if (currentQuestionIndex < activeQuestions.length - 1) {
       currentQuestionIndex++;
-      console.log(`✅ Moving to question ${currentQuestionIndex + 1}`);
     } else {
       // Go to topic importance ranking screen
       currentQuestionIndex = activeQuestions.length;
-      console.log(`🎯 Moving to topic ranking`);
     }
   }
 
