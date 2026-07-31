@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import typography from "@tailwindcss/typography";
 
 /**
  * Colours come from QuizTheVote_BrandGuide.pdf, page 5. The guide gives three
@@ -76,9 +77,30 @@ export default {
       // The site uses fully rounded buttons; see qtv-hero-block.txt.
       borderRadius: {
         pill: "999px"
+      },
+
+      // The About and Methodology pages have always carried `prose` classes,
+      // but the plugin providing them was never installed, so every heading on
+      // those pages rendered at body size. This themes them once installed.
+      typography: {
+        DEFAULT: {
+          css: {
+            "--tw-prose-body": "#50555B",
+            "--tw-prose-headings": "#283A47",
+            "--tw-prose-bold": "#283A47",
+            "--tw-prose-links": "#005D63",
+            "--tw-prose-bullets": "#C7D2D6",
+            "--tw-prose-quotes": "#283A47",
+            "--tw-prose-quote-borders": "#008C95",
+            "--tw-prose-hr": "#D5DBDE",
+            "h1, h2, h3, h4": {
+              fontFamily: '"Bonnie", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif'
+            }
+          }
+        }
       }
     }
   },
 
-  plugins: []
+  plugins: [typography]
 } as Config;

@@ -82,6 +82,19 @@ Deleted along with `fetchSheetData`, `calculateMatches`,
 fixture, for a net reduction of about 735 lines. Everything now parses as SVO and
 the `svo` parameter is an accepted no-op, so existing embeds keep working.
 
+### 14. About and Methodology used `prose` without the plugin installed — FIXED
+
+Both pages wrap their content in `<div class="prose prose-lg max-w-none">`, which
+comes from `@tailwindcss/typography`. That plugin was never in `package.json`, so
+the classes matched nothing and Tailwind's preflight left every heading at body
+size. Both public pages had been rendering as an undifferentiated wall of text
+since they were written, which is easy to miss in review because the markup
+looks correct.
+
+Found while checking the brand work, not caused by it. The plugin is now
+installed and themed to the brand: Bonnie for headings, ink for body, teal for
+links.
+
 ### 11. Two `<main>` elements, and two stacked headers on the public pages — FIXED
 
 `+layout.svelte` rendered both a `<Navbar>` and a `<main>`, while every route
