@@ -27,9 +27,15 @@
     totalQuestions?: number
   }> = [];
   
-  // Separate participating and non-participating candidates
-  $: participatingCandidates = candidateMatches.filter(c => (c.participationRate || 0) >= 0.5);
-  $: nonParticipatingCandidates = candidateMatches.filter(c => (c.participationRate || 0) < 0.5);
+  // Separate participating and non-participating candidates.
+  // Only the SVO scorers report a participation rate. When it is absent we have
+  // no evidence a candidate failed to respond, so they belong in the main list.
+  $: participatingCandidates = candidateMatches.filter(
+    c => c.participationRate === undefined || c.participationRate >= 0.5
+  );
+  $: nonParticipatingCandidates = candidateMatches.filter(
+    c => c.participationRate !== undefined && c.participationRate < 0.5
+  );
   
   // Debug logging for candidate classification
   $: {
@@ -194,9 +200,10 @@
       }
     }
     
-    // Show results screen
+    // Show results screen. Must be indexed off activeQuestions to match the
+    // showResults guard below, or inactive questions leave this unrenderable.
     if (quizData) {
-      currentQuestionIndex = quizData.questions.length + 1;
+      currentQuestionIndex = activeQuestions.length + 1;
     }
   }
 
@@ -205,6 +212,15 @@
       expandedCandidateId = null;
     } else {
       expandedCandidateId = candidateId;
+    }
+  }
+
+  function handleImageError(event: Event) {
+    const img = event.currentTarget as HTMLImageElement;
+    img.style.display = 'none';
+    const fallback = img.nextElementSibling;
+    if (fallback instanceof HTMLElement) {
+      fallback.classList.remove('hidden');
     }
   }
 
@@ -404,10 +420,7 @@
                         src={candidate.photo} 
                         alt={candidate.name}
                         class="absolute w-12 h-12 rounded-full object-cover"
-                        on:error={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling.style.display = 'flex';
-                        }}
+                        on:error={handleImageError}
                         loading="lazy"
                       />
                       <div class="hidden absolute w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
@@ -430,13 +443,14 @@
                       {/if}
                     </p>
                   </div>
-                  {#if candidate.website}
+                  {#if candidate.link_url}
                     <a 
-                      href={candidate.website} 
+                      href={candidate.link_url} 
                       target="_blank"
+                      rel="noopener noreferrer"
                       class="ml-3 text-xs text-blue-600 hover:text-blue-800 underline"
                     >
-                      Visit Website
+                      {candidate.link_text || 'Visit Website'}
                     </a>
                   {/if}
                 </div>
