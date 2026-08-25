@@ -43,7 +43,7 @@ Built with modern web technologies for reliability and performance:
 - **Styling:** Tailwind CSS
 - **Data Source:** Google Sheets (CSV API)
 - **Deployment:** GitHub Pages (Static Site)
-- **Matching Algorithm:** Weighted cosine similarity with topic importance
+- **Matching Algorithm:** Per-question similarity, then a mean, weighted by topic ranking
 
 ## Repository Layout
 

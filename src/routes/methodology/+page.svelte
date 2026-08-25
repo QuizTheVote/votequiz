@@ -5,7 +5,7 @@
 
 <svelte:head>
   <title>Methodology - Quiz The Vote</title>
-  <meta name="description" content="Scientific methodology behind the Social Value Orientation framework used in our voter-candidate matching algorithm.">
+  <meta name="description" content="How Quiz The Vote scores each question and turns those scores into a candidate match percentage.">
 </svelte:head>
 
 <div class="min-h-screen bg-ink-50">
@@ -52,30 +52,62 @@
           <li><strong>Scientific rigor:</strong> Based on peer-reviewed psychological research</li>
         </ul>
 
-        <h2>Matching Algorithm</h2>
+        <h2>How the match percentage is calculated</h2>
         <p>
-          Our algorithm uses advanced mathematical approaches to calculate candidate similarity:
+          Each question is scored on its own, from 0 (no match) to 1 (exact match).
+          Those per-question scores are averaged. If you ranked topics, that
+          average is weighted so higher-ranked topics count more. The result is
+          multiplied by 100 and rounded to a whole number. That number is the
+          match percentage you see. There is no extra stretching or
+          “normalization” step.
+        </p>
+        <p>
+          Only questions that both you and the candidate answered are included.
+          Inactive questions are not asked and not scored.
         </p>
 
-        <h3>Multi-Type Question Support</h3>
+        <h3>By question type</h3>
         <div class="bg-ink-50 p-4 rounded-lg my-4">
-          <ul class="space-y-2 text-sm">
-            <li><strong>Scale Questions:</strong> Cosine similarity for ordinal responses (1-5 agreement scales)</li>
-            <li><strong>Categorical Questions:</strong> Exact matching for single-choice responses</li>
-            <li><strong>Multiple Choice:</strong> Jaccard similarity (intersection ÷ union) for set comparisons</li>
+          <p class="text-sm font-semibold mb-2">Five-point agreement</p>
+          <p class="text-sm mb-3">
+            Strongly disagree (1) through strongly agree (5). Nearby answers
+            only count if they stay on the same side of neutral:
+          </p>
+          <ul class="space-y-1 text-sm mb-4">
+            <li>Same answer: full match</li>
+            <li>One step apart on the agree side (4 and 5), or on the disagree side (1 and 2): half match</li>
+            <li>One step that crosses neutral (2 and 3, or 3 and 4): no match</li>
+            <li>Two or more steps apart: no match</li>
           </ul>
+
+          <p class="text-sm font-semibold mb-2">Three-point support / oppose</p>
+          <p class="text-sm mb-3">
+            Same answer is a full match. The only partial credit is a quarter
+            match when the candidate is Support or Oppose and you chose the
+            middle option. Every other combination, including opposite answers,
+            is no match.
+          </p>
+
+          <p class="text-sm font-semibold mb-2">Single choice</p>
+          <p class="text-sm mb-3">
+            Pick-one and yes/no questions are exact: the same option is a full
+            match, anything else is no match.
+          </p>
+
+          <p class="text-sm font-semibold mb-2">Multiple choice</p>
+          <p class="text-sm">
+            Shared selections divided by the total number of distinct selections
+            either of you made (Jaccard similarity). Selecting the same set is a
+            full match; overlapping sets are a partial match.
+          </p>
         </div>
 
-        <h3>Weighted Topic Importance</h3>
+        <h3>Topic ranking</h3>
         <p>
-          Users can rank topics by importance, and the algorithm applies these weights to final similarity scores. 
-          This ensures that matches reflect both value alignment and priority preferences.
-        </p>
-
-        <h3>Score Normalization</h3>
-        <p>
-          Raw similarity scores are transformed to percentages using research-validated functions that spread 
-          results across a meaningful 20-100% range, avoiding clustered results that provide little differentiation.
+          If the quiz asks you to rank topics, the list order becomes a weight
+          from 10 at the top to 1 at the bottom. Each topic’s average is
+          multiplied by its weight, then those weighted averages are combined.
+          Topics you ranked that have no questions do not affect the score.
         </p>
 
         <h2>Research Foundation</h2>

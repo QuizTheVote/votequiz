@@ -100,6 +100,16 @@ demo sheet.
   overflows on a phone before anyone expands a candidate. See issue 7 in
   `KNOWN_ISSUES.md`.
 
+### U6. Are any real newsroom quizzes live right now? — RESOLVED
+
+Answered 2026-08-23: none are live. A new newsroom quiz is about to start, so
+the next production deploy should treat the WordPress generator (issue 6) and
+the homepage demo sheet (issue 13) as more urgent than polish. Re-ask if that
+quiz goes live before the next deploy.
+
+`template/archive/` still holds an "At-Large Copy" and a "fish election quiz"
+snapshot. Whether those sheets still exist is U2, not this question.
+
 ---
 
 ## OPEN
@@ -172,12 +182,6 @@ displays a template; it does not send mail.
 To close: on a scratch copy, run Generate Candidate Survey, submit a response
 through the resulting Form, then run Sync Survey Responses, and confirm the
 answers land in the right `Quiz_Data` column.
-
-### U6. Are any real newsroom quizzes live right now? — OPEN
-
-Business knowledge only you have. This determines how cautiously anything gets
-deployed. `template/archive/` contains an "At-Large Copy" and a "fish election
-quiz" snapshot, which suggests at least two derived quizzes existed.
 
 ### U8. Where does the WordPress code live, and can it be tracked? — OPEN
 
@@ -253,9 +257,10 @@ WP admin → the Headers and Footers plugin (docs mention `footer_code.txt` and
 Until these are tracked, a WordPress edit can break embed generation for every
 newsroom with no history and nobody to notice.
 
-### 6. Answer from memory (closes U2 and U6, no clicking)
+### 6. Answer from memory (closes U2, no clicking)
 
-Fill in the blanks. "Live" means a real audience can reach it today.
+U6 is settled as of 2026-08-23: no newsroom quizzes are live; one is about to
+start. Fill in the rest. "Live" means a real audience can reach it today.
 
 | Spreadsheet ID | What it is for | Live or abandoned | Google account that owns it |
 | --- | --- | --- | --- |
@@ -265,8 +270,6 @@ Fill in the blanks. "Live" means a real audience can reach it today.
 
 Also needed:
 
-- Are any real newsroom quizzes live right now? If yes, which sheets, on whose
-  site, and is an election imminent? This sets how cautiously anything deploys.
 - Did the survey generator ever create Google Forms that still exist?
 - `template/archive/` holds an "At-Large Copy" and a "fish election quiz",
   which suggests at least two derived quizzes once existed. Do they still?
