@@ -85,6 +85,26 @@ export interface SheetDiagnostic {
   message: string;
 }
 
+/**
+ * Per-quiz configuration a newsroom sets in an optional `Settings` tab
+ * (two columns: `key`, `value`). Everything here is optional; an absent tab or
+ * a blank value leaves the app behaving exactly as it did before the feature.
+ *
+ * Recognised keys:
+ *   completion_headline       heading on the end-of-quiz card
+ *   completion_body           one line of supporting text
+ *   completion_button_label   text on the call-to-action button
+ *   completion_button_url     where the button links (http/https only)
+ *   share_url                 the page the quiz lives on, used by the share links
+ */
+export interface QuizSettings {
+  completionHeadline?: string;
+  completionBody?: string;
+  completionButtonLabel?: string;
+  completionButtonUrl?: string;
+  shareUrl?: string;
+}
+
 export interface QuizDataSVO {
   candidates: Candidate[];
   questions: QuestionSVO[];
@@ -92,6 +112,59 @@ export interface QuizDataSVO {
   topics: Topic[];
   topicImportance?: TopicImportance[];
   diagnostics?: SheetDiagnostic[];
+  settings?: QuizSettings;
+}
+
+/**
+ * Accepts a value only if it is an http(s) URL. A newsroom pasting a bare
+ * domain, a `javascript:` string, or a mangled link should get no button rather
+ * than a broken or dangerous one.
+ */
+export function safeHttpUrl(raw: string | undefined | null): string | undefined {
+  if (!raw) return undefined;
+  try {
+    const url = new URL(raw.trim());
+    if (url.protocol === 'http:' || url.protocol === 'https:') return url.toString();
+  } catch {
+    // not a URL
+  }
+  return undefined;
+}
+
+/**
+ * Reads the optional Settings tab into a normalised key/value map. Header names
+ * are matched case-insensitively, and an unlabelled sheet falls back to using
+ * the first column as the key and the second as the value.
+ */
+function readSettingsMap(sheet: CsvSheet): Map<string, string> {
+  const map = new Map<string, string>();
+  if (sheet.headers.length < 2) return map;
+
+  const keyHeader = sheet.headers.find(h => h.trim().toLowerCase() === 'key') ?? sheet.headers[0];
+  const valueHeader = sheet.headers.find(h => h.trim().toLowerCase() === 'value') ?? sheet.headers[1];
+
+  for (const row of sheet.rows) {
+    const key = String(row[keyHeader] ?? '').trim().toLowerCase();
+    const value = String(row[valueHeader] ?? '').trim();
+    if (key) map.set(key, value);
+  }
+  return map;
+}
+
+function parseSettings(map: Map<string, string>): QuizSettings {
+  const settings: QuizSettings = {};
+  const headline = map.get('completion_headline');
+  const body = map.get('completion_body');
+  const buttonLabel = map.get('completion_button_label');
+  const buttonUrl = safeHttpUrl(map.get('completion_button_url'));
+  const shareUrl = safeHttpUrl(map.get('share_url'));
+
+  if (headline) settings.completionHeadline = headline;
+  if (body) settings.completionBody = body;
+  if (buttonLabel) settings.completionButtonLabel = buttonLabel;
+  if (buttonUrl) settings.completionButtonUrl = buttonUrl;
+  if (shareUrl) settings.shareUrl = shareUrl;
+  return settings;
 }
 
 /**
@@ -310,10 +383,13 @@ export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDat
   }
 
   try {
-    const [quizDataSheet, candidateSheet, topicSheet] = await Promise.all([
+    const [quizDataSheet, candidateSheet, topicSheet, settingsSheet] = await Promise.all([
       fetchSheetAsCSV(sheetId, 'Quiz_Data'),
       fetchSheetAsCSV(sheetId, 'Candidates'),
-      fetchSheetAsCSV(sheetId, 'Topics').catch(() => ({ headers: [], rows: [] }) as CsvSheet)
+      fetchSheetAsCSV(sheetId, 'Topics').catch(() => ({ headers: [], rows: [] }) as CsvSheet),
+      // Settings is optional. A sheet without the tab returns an error page, so
+      // treat any failure as "no settings" exactly like Topics.
+      fetchSheetAsCSV(sheetId, 'Settings').catch(() => ({ headers: [], rows: [] }) as CsvSheet)
     ]);
 
     const candidates = candidateSheet.rows as Candidate[];
@@ -367,6 +443,28 @@ export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDat
 
     const diagnostics = diagnoseSheet(quizDataSheet, candidateSheet, candidates, questions, topics);
 
+    const settingsMap = readSettingsMap(settingsSheet);
+    const settings = parseSettings(settingsMap);
+
+    // A URL that was supplied but rejected leaves the newsroom with a silently
+    // missing button. Surface it as a notice so ?debug=true explains why.
+    if (settingsMap.get('completion_button_url') && !settings.completionButtonUrl) {
+      diagnostics.push({
+        severity: 'notice',
+        message:
+          'The Settings tab\'s "completion_button_url" is not a valid http/https link, ' +
+          'so the end-of-quiz button will not appear.'
+      });
+    }
+    if (settingsMap.get('share_url') && !settings.shareUrl) {
+      diagnostics.push({
+        severity: 'notice',
+        message:
+          'The Settings tab\'s "share_url" is not a valid http/https link, so shares will ' +
+          'fall back to the QuizTheVote homepage.'
+      });
+    }
+
     if (skippedRows > 0) {
       diagnostics.push({
         severity: 'notice',
@@ -399,7 +497,8 @@ export async function fetchSheetDataSVO(sheetId: string | null): Promise<QuizDat
       candidateAnswers,
       topics,
       topicImportance: [],
-      diagnostics
+      diagnostics,
+      settings
     };
   } catch (error) {
     throw new Error(
