@@ -1,6 +1,18 @@
 <script lang="ts">
   import { base } from '$app/paths';
   import SiteNav from '$lib/components/SiteNav.svelte';
+  import {
+    DEFAULT_THEME,
+    DISPLAY_FONTS,
+    PAGE_BACKGROUNDS,
+    SANS_FONTS,
+    appendThemeQuery,
+    parseHex,
+    themeHasContrastWarning,
+    type BgId,
+    type DisplayFontId,
+    type SansFontId
+  } from '$lib/theme';
 
   // The sheet newsrooms copy. Must stay in step with the Copy Template button on
   // quizthevote.com/build-your-quiz/, which is the flow most newsrooms use.
@@ -12,6 +24,20 @@
   let showPreview = false;
   let step = 1; // Track which step user is on
   let iframeHeight = 750; // Default height
+  let accentHex = DEFAULT_THEME.accent;
+  let inkHex = DEFAULT_THEME.ink;
+  let bgId: BgId = DEFAULT_THEME.bg;
+  let displayFont: DisplayFontId = DEFAULT_THEME.display;
+  let sansFont: SansFontId = DEFAULT_THEME.sans;
+
+  $: appearanceTheme = {
+    accent: parseHex(accentHex) ?? DEFAULT_THEME.accent,
+    ink: parseHex(inkHex) ?? DEFAULT_THEME.ink,
+    bg: bgId,
+    display: displayFont,
+    sans: sansFont
+  };
+  $: contrastWarning = themeHasContrastWarning(appearanceTheme);
   
   // Update embed code when height changes
   function updateEmbedCode() {
@@ -78,9 +104,8 @@
       return;
     }
     
-    // Generate the embed URL
     const baseUrl = window.location.origin + window.location.pathname.replace('/newsroom', '');
-    previewUrl = `${baseUrl}?sheet=${sheetId}&svo=true`;
+    previewUrl = appendThemeQuery(`${baseUrl}?sheet=${sheetId}&svo=true`, appearanceTheme);
     
     // Generate iframe embed code with customizable height
     updateEmbedCode();
@@ -98,6 +123,10 @@
   function copyTemplate() {
     window.open(`https://docs.google.com/spreadsheets/d/${TEMPLATE_SHEET_ID}/copy`, '_blank');
     step = 2;
+  }
+
+  function refreshPreview() {
+    if (showPreview) generateEmbedCode();
   }
 </script>
 
@@ -241,6 +270,58 @@
               placeholder="https://docs.google.com/spreadsheets/d/..."
               class="w-full px-4 py-2 border border-ink-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             />
+          </div>
+
+          <div class="border border-ink-200 rounded-lg p-4 space-y-4">
+            <h3 class="font-semibold text-ink-900">Appearance</h3>
+            <p class="text-sm text-ink-600">Optional. Leave these as they are to keep the QuizTheVote look.</p>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <label class="text-sm text-ink-700">
+                Accent
+                <span class="mt-1 flex items-center gap-2">
+                  <input type="color" bind:value={accentHex} on:input={refreshPreview} class="h-9 w-12 rounded border border-ink-300" />
+                  <input type="text" bind:value={accentHex} on:input={refreshPreview} class="flex-1 px-2 py-1 border border-ink-300 rounded font-mono text-sm" />
+                </span>
+              </label>
+              <label class="text-sm text-ink-700">
+                Heading
+                <span class="mt-1 flex items-center gap-2">
+                  <input type="color" bind:value={inkHex} on:input={refreshPreview} class="h-9 w-12 rounded border border-ink-300" />
+                  <input type="text" bind:value={inkHex} on:input={refreshPreview} class="flex-1 px-2 py-1 border border-ink-300 rounded font-mono text-sm" />
+                </span>
+              </label>
+            </div>
+            <label class="text-sm text-ink-700 block">
+              Background
+              <select bind:value={bgId} on:change={refreshPreview} class="mt-1 w-full px-3 py-2 border border-ink-300 rounded-lg">
+                {#each PAGE_BACKGROUNDS as page}
+                  <option value={page.id}>{page.label}</option>
+                {/each}
+              </select>
+            </label>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <label class="text-sm text-ink-700">
+                Heading font
+                <select bind:value={displayFont} on:change={refreshPreview} class="mt-1 w-full px-3 py-2 border border-ink-300 rounded-lg">
+                  {#each DISPLAY_FONTS as font}
+                    <option value={font.id}>{font.label}</option>
+                  {/each}
+                </select>
+              </label>
+              <label class="text-sm text-ink-700">
+                Body font
+                <select bind:value={sansFont} on:change={refreshPreview} class="mt-1 w-full px-3 py-2 border border-ink-300 rounded-lg">
+                  {#each SANS_FONTS as font}
+                    <option value={font.id}>{font.label}</option>
+                  {/each}
+                </select>
+              </label>
+            </div>
+            {#if contrastWarning}
+              <p class="text-sm text-sand-800 bg-sand-50 border-l-4 border-sand-500 px-3 py-2">
+                Those colors may be hard to read. You can still generate the embed.
+              </p>
+            {/if}
           </div>
           
           <button 
