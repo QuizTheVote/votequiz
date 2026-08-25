@@ -2,6 +2,7 @@
   import type { Candidate, QuizDataSVO, QuestionSVO } from '$lib/sheets';
   import type { UserAnswerSVO } from '$lib/scorer';
   import { calculateQuestionSimilarity } from '$lib/scorer';
+  import { matchBarStyle } from '$lib/theme';
   
   export let candidates: Array<Candidate & { 
     matchPercentage: number, 
@@ -115,15 +116,9 @@
   
   /**
    * Color is emphasis, not a second legend. The number and the bar length are
-   * the facts. High matches use the accent (teal by default, or a newsroom
-   * color). Everything under 60% is ink-400 — darker than the ink-200 track —
-   * so a short bar stays visible without introducing a second hue.
+   * the facts. The fill is a linear mix of the accent (teal by default, or a
+   * newsroom color) so a mid-range score like 52% still shows that color.
    */
-  function getMatchColor(percentage: number): string {
-    if (percentage >= 80) return 'bg-brand-600';
-    if (percentage >= 60) return 'bg-brand-400';
-    return 'bg-ink-400';
-  }
 
   // Handle image loading errors
   function handleImageError(event: Event, candidateName: string) {
@@ -175,10 +170,7 @@
         <div class="flex flex-col items-end">
           <div class="flex items-center">
             <div class="flex h-7 w-16 bg-ink-200 rounded-full overflow-hidden">
-              <div 
-                class={`${getMatchColor(candidate.matchPercentage)} h-full`} 
-                style={`width: ${candidate.matchPercentage}%`}
-              ></div>
+              <div class="h-full" style={matchBarStyle(candidate.matchPercentage)}></div>
             </div>
             <span class="ml-2 text-base sm:text-xl font-bold">{candidate.matchPercentage}%</span>
           </div>
@@ -215,10 +207,7 @@
                       <div class="w-1/3 font-medium">{topicMatch.topicName}</div>
                       <div class="w-2/3 flex items-center">
                         <div class="flex-grow h-4 bg-ink-200 rounded-full overflow-hidden">
-                          <div 
-                            class={`${getMatchColor(topicMatch.matchPercentage)} h-full`} 
-                            style={`width: ${topicMatch.matchPercentage}%`}
-                          ></div>
+                          <div class="h-full" style={matchBarStyle(topicMatch.matchPercentage)}></div>
                         </div>
                         <span class="ml-2 w-10 text-right font-bold">{topicMatch.matchPercentage}%</span>
                         <button 

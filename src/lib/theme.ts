@@ -5,7 +5,8 @@
  * Parameter names (source of truth — keep both builders in step):
  *   accent  6-digit hex, no #     buttons, selected answers, high match bars
  *   ink     6-digit hex, no #     headings, question text, candidate names
- *   bg      paper | white | cream page behind the cards (light surfaces only)
+ *   bg      paper | white         page behind the cards (light surfaces only)
+ *           cream is still accepted on old URLs, but is no longer offered
  *   display allowlisted id        heading face
  *   sans    allowlisted id        body face
  *
@@ -14,10 +15,16 @@
 
 export type BgId = 'paper' | 'white' | 'cream';
 
-export const PAGE_BACKGROUNDS: { id: BgId; label: string; hex: string }[] = [
-	{ id: 'paper', label: 'Light grey (QuizTheVote)', hex: '#f4f6f7' },
-	{ id: 'white', label: 'White', hex: '#ffffff' },
-	{ id: 'cream', label: 'Cream', hex: '#f6f1e8' }
+const PAGE_BG_HEX: Record<BgId, string> = {
+	paper: '#f4f6f7',
+	white: '#ffffff',
+	cream: '#f6f1e8'
+};
+
+/** Backgrounds offered in the builders. Cream stays parseable for old embeds. */
+export const PAGE_BACKGROUNDS: { id: Exclude<BgId, 'cream'>; label: string; hex: string }[] = [
+	{ id: 'paper', label: 'Light grey (QuizTheVote)', hex: PAGE_BG_HEX.paper },
+	{ id: 'white', label: 'White', hex: PAGE_BG_HEX.white }
 ];
 
 export const DEFAULT_THEME = {
@@ -40,7 +47,18 @@ export type QuizTheme = {
 };
 
 export function pageBackgroundHex(id: BgId): string {
-	return PAGE_BACKGROUNDS.find((b) => b.id === id)?.hex ?? PAGE_BACKGROUNDS[0].hex;
+	return PAGE_BG_HEX[id] ?? PAGE_BG_HEX.paper;
+}
+
+/**
+ * Fill for a match bar. The left edge is always the accent; the right edge
+ * mixes toward the track grey by score, with a floor so 52% still reads as
+ * that color instead of dropping to a plain grey bucket.
+ */
+export function matchBarStyle(percentage: number): string {
+	const t = Math.max(0, Math.min(100, Number.isFinite(percentage) ? percentage : 0));
+	const tipMix = Math.round(36 + t * 0.64);
+	return `width:${t}%;background:linear-gradient(90deg,var(--qtv-brand-500),color-mix(in srgb,var(--qtv-brand-500) ${tipMix}%,#d5dbde))`;
 }
 
 export const DISPLAY_FONTS: { id: DisplayFontId; label: string; stack: string }[] = [
@@ -87,7 +105,8 @@ function parseBg(raw: string | null): BgId | null {
 	if (value === 'paper' || value === 'white' || value === 'cream') return value;
 	const hex = parseHex(raw);
 	if (!hex) return null;
-	return PAGE_BACKGROUNDS.find((b) => b.hex === hex)?.id ?? null;
+	const found = (Object.entries(PAGE_BG_HEX) as [BgId, string][]).find(([, h]) => h === hex);
+	return found?.[0] ?? null;
 }
 
 export function parseThemeFromSearch(search: string): QuizTheme {
@@ -215,8 +234,14 @@ export function applyTheme(theme: QuizTheme, root: HTMLElement = document.docume
 		root.style.setProperty('--qtv-brand-900', `color-mix(in srgb, ${theme.accent} 40%, black)`);
 	}
 
+	// Body and the quiz page both use ink-50 as the page fill. Keep it on the
+	// chosen background only — mixing in the heading color turns the page pink
+	// or green whenever someone picks a custom ink.
+	root.style.setProperty('--qtv-ink-50', page);
+	root.style.backgroundColor = page;
+	if (typeof document !== 'undefined') document.body.style.backgroundColor = page;
+
 	if (theme.ink !== DEFAULT_THEME.ink) {
-		root.style.setProperty('--qtv-ink-50', `color-mix(in srgb, ${theme.ink} 6%, ${page})`);
 		root.style.setProperty('--qtv-ink-100', `color-mix(in srgb, ${theme.ink} 12%, ${page})`);
 		root.style.setProperty('--qtv-ink-200', `color-mix(in srgb, ${theme.ink} 22%, ${page})`);
 		root.style.setProperty('--qtv-ink-300', `color-mix(in srgb, ${theme.ink} 35%, ${page})`);
@@ -226,15 +251,6 @@ export function applyTheme(theme: QuizTheme, root: HTMLElement = document.docume
 		root.style.setProperty('--qtv-ink-700', `color-mix(in srgb, ${theme.ink} 82%, #50555b)`);
 		root.style.setProperty('--qtv-ink-800', `color-mix(in srgb, ${theme.ink} 90%, black)`);
 		root.style.setProperty('--qtv-ink-900', theme.ink);
-	}
-
-	if (theme.bg !== DEFAULT_THEME.bg) {
-		root.style.backgroundColor = page;
-		if (typeof document !== 'undefined') document.body.style.backgroundColor = page;
-		// body uses ink-50, so point that at the chosen page color.
-		if (theme.ink === DEFAULT_THEME.ink) {
-			root.style.setProperty('--qtv-ink-50', page);
-		}
 	}
 }
 
