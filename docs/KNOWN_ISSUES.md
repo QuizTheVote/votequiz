@@ -119,6 +119,22 @@ Parsing is now tolerant of case and of yes/1, and an absent column means all
 questions are active. A sheet where every question really is inactive now reports
 that as an error rather than rendering an empty quiz.
 
+### 12. The public methodology page describes an algorithm the app does not use — FIXED
+
+Decided 2026-08-23: keep the scorer as it is, and make the methodology page
+describe that scorer. Do not change scoring to match the old copy.
+
+The page had claimed cosine similarity on scale questions and a
+"research-validated" transformation that spread results across 20–100%. The
+app has never done either. `agree_5` is a graduated distance rule (identical
+= 1.0; one step on the same side of neutral = 0.5; crossing neutral or two
+or more steps = 0). The published percentage is
+`Math.round(rawScore * 100)`, optionally weighted by the voter's topic
+ranking. Jaccard on multiple choice and topic weighting were already
+accurate.
+
+The `/methodology` page now states those rules. The scorer was not touched.
+
 ## Open
 
 ### 13. The homepage demo sheet is misconfigured
@@ -180,6 +196,9 @@ replacement for WordPress is committed at
 `wordpress/build-your-quiz.fixed.js`. Deploying it needs WP admin access, so it
 remains open. See [../wordpress/README.md](../wordpress/README.md).
 
+A newsroom quiz is about to start (U6, 2026-08-23). This is the highest-value
+item that still needs a login.
+
 ### 7. Results page overflows the recommended iframe height on mobile
 
 Found while verifying U12. At a 390x844 viewport against the demo sheet, the
@@ -203,45 +222,6 @@ the in-app version's Copy Template button pointed at sheet
 
 Worth deciding whether the in-app `/newsroom` page or the WordPress page is the
 real builder, and deleting the other.
-
-### 12. The public methodology page describes an algorithm the app does not use
-
-Needs your decision, because it is published editorial copy about how the tool
-works, and newsrooms cite it.
-
-`src/routes/methodology/+page.svelte:63` states:
-
-> **Scale Questions:** Cosine similarity for ordinal responses (1-5 agreement scales)
-
-The `agree_5` scoring in `src/lib/scorer.ts` is not cosine similarity. It is a
-graduated distance rule:
-
-| Situation | Score |
-| --- | --- |
-| Identical answers | 1.0 |
-| One step apart, both on the agree side (4 and 5) or both on the disagree side (1 and 2) | 0.5 |
-| One step apart but crossing neutral (2↔3, 3↔4) | 0 |
-| Two or more steps apart | 0 |
-
-Line 77 also states that raw scores are "transformed to percentages using
-research-validated functions that spread" the results. In fact the final figure is
-`Math.round(rawScore * 100)`, where `rawScore` is the plain mean of the
-per-question scores above, weighted by topic importance when the voter has ranked
-topics. There is no normalisation step.
-
-Two claims on that page **are** accurate: Jaccard similarity for multiple choice,
-and topic weighting applied to the final score.
-
-This is not a regression. The SVO scorer has never used cosine similarity; the
-cosine helpers belonged to the legacy path, which is why deleting that path left
-them with no callers. The page appears to describe the pre-SVO implementation.
-
-The distance rule is defensible and arguably better than cosine similarity for
-this purpose, since treating "somewhat agree" and "neutral" as a non-match is a
-deliberate editorial choice. The problem is only that the page does not say so.
-Either the copy should describe the real rule, or the scoring should change to
-match the copy. Given that a matching percentage is the tool's central claim to
-readers, this is worth settling before the next election cycle.
 
 ## Maintenance
 
