@@ -31,6 +31,10 @@ tracked in [`UNKNOWNS.md`](UNKNOWNS.md).
 | `BASE_TEMPLATE_STRUCTURE.md` | Sheet structure reference (Sep 8 2025 — see caveat below) |
 | `KNOWN_ISSUES.md` | Verified bugs and open work, with fixed items kept and dated |
 | `UNKNOWNS.md` | Unverified assumptions, each with a defined test and an owner |
+| `HEALTHCHECK_AUDIT.md` | Why the in-sheet health check missed real errors, and the fix |
+| `CANDIDATE_SURVEY.md` | The candidate-survey Google Form flow and its breakpoints |
+| `STRATEGY_SHARE_PRESENCE.md` | Whether to run official QTV social accounts (strategy, not built) |
+| `STRATEGY_DATA_CAPTURE.md` | Capturing quiz-taker data and whether to monetize it (strategy, not built) |
 | `BRAND.md` | Where the colours, fonts and logo came from, and how to regenerate them |
 | `history/` | The `app update 2.0`–`2.5` narrative logs, in order |
 
@@ -70,7 +74,15 @@ Omitting `sheet` behaves exactly like `demo=true`, which is why the bare
 
 ### Sheet tabs the app reads
 
-`Quiz_Data` (required), `Candidates` (required), `Topics` (optional).
+`Quiz_Data` (required), `Candidates` (required), `Topics` (optional),
+`Settings` (optional).
+
+The optional `Settings` tab is two columns, `key` and `value`. It carries
+per-quiz extras a newsroom can set without touching code: an end-of-quiz
+call-to-action (`completion_headline`, `completion_body`,
+`completion_button_label`, `completion_button_url`) and the page the quiz lives
+on for share links (`share_url`). URL values are used only if they are http(s);
+an absent tab or blank value changes nothing.
 
 `Quiz_Data` columns:
 

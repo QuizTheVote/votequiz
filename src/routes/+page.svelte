@@ -8,12 +8,15 @@
   import EnhancedResults from '$lib/components/EnhancedResults.svelte';
   import QuestionRenderer from '$lib/components/questions/QuestionRenderer.svelte';
   import Navbar from '$lib/components/Navbar.svelte';
+  import ShareResults from '$lib/components/ShareResults.svelte';
+  import CompletionCTA from '$lib/components/CompletionCTA.svelte';
   import { applyTheme, parseThemeFromSearch } from '$lib/theme';
 
   // Configuration variables - now determined by URL parameters
   let sheetId: string | null = null;
   let useSampleData = false;
   let showDiagnostics = false;
+  let quizTitle: string | null = null;
 
   let quizData: QuizDataSVO | null = null;
   let currentQuestionIndex = -1; // -1 for welcome screen, questions.length for topic ranking, questions.length + 1 for results
@@ -43,6 +46,11 @@
   $: sheetErrors = diagnostics.filter((d: SheetDiagnostic) => d.severity === 'error');
   $: visibleDiagnostics = showDiagnostics ? diagnostics : sheetErrors;
 
+  // Newsroom-defined extras from the Settings tab (completion CTA, share URL).
+  $: settings = quizData?.settings;
+  // Matches come back sorted, so the first participant is the strongest match.
+  $: topMatch = participatingCandidates[0] ?? null;
+
   let loading = true;
   let error: string | null = null;
   let expandedCandidateId: string | null = null;
@@ -53,6 +61,10 @@
       // Read URL parameters
       const urlParams = new URLSearchParams(window.location.search);
       applyTheme(parseThemeFromSearch(window.location.search));
+      // Only a custom title is worth threading into the share text; the default
+      // would read oddly ("in the Quiz The Vote").
+      const rawTitle = urlParams.get('title');
+      quizTitle = rawTitle && rawTitle !== 'Quiz The Vote' ? rawTitle : null;
       sheetId = urlParams.get('sheet');
       useSampleData = urlParams.get('demo') === 'true' || !sheetId;
       // Sheet problems are shown to everyone when they corrupt results. The rest
@@ -328,12 +340,20 @@
         >
           &larr; Back
         </button>
-        <button 
-          class="bg-brand-500 hover:bg-brand-700 text-white font-bold py-2 px-3 sm:px-4 rounded-pill text-sm sm:text-base"
-          on:click={restartQuiz}
-        >
-          Restart
-        </button>
+        <div class="flex items-center gap-2 sm:gap-3">
+          <ShareResults
+            shareUrl={settings?.shareUrl}
+            topName={topMatch?.name ?? null}
+            topPercentage={topMatch?.matchPercentage ?? null}
+            {quizTitle}
+          />
+          <button 
+            class="bg-brand-500 hover:bg-brand-700 text-white font-bold py-2 px-3 sm:px-4 rounded-pill text-sm sm:text-base"
+            on:click={restartQuiz}
+          >
+            Restart
+          </button>
+        </div>
       </div>
       
       <!-- Participating Candidates -->
@@ -402,6 +422,10 @@
         </div>
       {/if}
       
+      <!-- Newsroom's own call to action, if they set one in the Settings tab.
+           Placed after the matches so the voter sees their result first. -->
+      <CompletionCTA {settings} />
+
       <!-- Attribution -->
       <div class="text-center mt-8 pt-6 border-t border-ink-200">
         <p class="text-sm text-ink-600">
