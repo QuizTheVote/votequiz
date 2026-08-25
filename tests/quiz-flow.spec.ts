@@ -117,4 +117,58 @@ test.describe('URL parameters', () => {
 		await page.goto('/?svo=true&demo=true&header=false');
 		await expect(page.locator('nav')).toHaveCount(0);
 	});
+
+	test('accent and display params restyle the quiz and still start', async ({ page }) => {
+		await page.goto('/?demo=true&accent=1a365d&display=georgia');
+		await expect(page.getByRole('button', { name: 'Start Quiz' })).toBeVisible();
+
+		const accent = await page.evaluate(() =>
+			getComputedStyle(document.documentElement).getPropertyValue('--qtv-accent').trim().toLowerCase()
+		);
+		expect(accent).toBe('#1a365d');
+
+		const display = await page.evaluate(() =>
+			getComputedStyle(document.documentElement).getPropertyValue('--qtv-font-display')
+		);
+		expect(display).toMatch(/Georgia/);
+	});
+
+	test('source-serif and source-sans params apply those stacks', async ({ page }) => {
+		await page.goto('/?demo=true&display=source-serif&sans=source-sans');
+		await expect(page.getByRole('button', { name: 'Start Quiz' })).toBeVisible();
+
+		const display = await page.evaluate(() =>
+			getComputedStyle(document.documentElement).getPropertyValue('--qtv-font-display')
+		);
+		const sans = await page.evaluate(() =>
+			getComputedStyle(document.documentElement).getPropertyValue('--qtv-font-sans')
+		);
+		expect(display).toMatch(/Source Serif 4/);
+		expect(sans).toMatch(/Source Sans 3/);
+	});
+
+	test('cream background is applied and an unknown bg is ignored', async ({ page }) => {
+		await page.goto('/?demo=true&bg=cream');
+		await expect(page.getByRole('button', { name: 'Start Quiz' })).toBeVisible();
+		const cream = await page.evaluate(() =>
+			getComputedStyle(document.body).backgroundColor
+		);
+		expect(cream).toBe('rgb(246, 241, 232)');
+
+		await page.goto('/?demo=true&bg=ff0000');
+		await expect(page.getByRole('button', { name: 'Start Quiz' })).toBeVisible();
+		const paper = await page.evaluate(() =>
+			getComputedStyle(document.documentElement).getPropertyValue('--qtv-bg').trim().toLowerCase()
+		);
+		expect(paper).toBe('#f4f6f7');
+	});
+
+	test('an invalid accent is ignored', async ({ page }) => {
+		await page.goto('/?demo=true&accent=not-a-color');
+		await expect(page.getByRole('button', { name: 'Start Quiz' })).toBeVisible();
+		const accent = await page.evaluate(() =>
+			getComputedStyle(document.documentElement).getPropertyValue('--qtv-accent').trim().toLowerCase()
+		);
+		expect(accent).toBe('#008c95');
+	});
 });

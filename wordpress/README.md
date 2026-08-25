@@ -11,12 +11,13 @@ until now its code existed only inside WordPress, with no history and no review.
 | `build-your-quiz.live-capture.js` | The generator script exactly as served from the live page on 2026-07-31. A record of what is actually running, not something to edit. |
 | `build-your-quiz.live-capture.html` | The markup the script binds to, captured at the same time. Element ids matter: `qtv-url`, `qtv-gen`, `qtv-err`, `qtv-results`, `qtv-direct`, `qtv-embed`, `qtv-test`, `qtv-height`, `qtv-hval`, `qtv-frame`. |
 | `build-your-quiz.fixed.js` | A drop-in replacement that fixes the published-URL bug. Not yet deployed. |
+| `build-your-quiz.page.html` | Full WordPress page markup (Gutenberg code editor format) with the widget inlined and the published-URL bug fixed. Paste this over the page contents. |
 
-These were recovered by fetching the public page, so they are a faithful record
-of the output but not necessarily of the source. See U8 in
-[../docs/UNKNOWNS.md](../docs/UNKNOWNS.md): the snippet reportedly lives in a
-Headers and Footers plugin, and exporting it from WP admin would confirm whether
-anything else is wrapped around it.
+The live page (exported 2026-08-24) does not contain the generator itself. It
+calls a shortcode, `[qtv_quiz_generator]`. That is why editing the page in
+WordPress did not show the script. `build-your-quiz.page.html` replaces that
+shortcode with the widget and the fixed script, so the page no longer depends
+on the shortcode.
 
 ## What the live generator does
 
@@ -49,14 +50,16 @@ the id length so the failure is caught in the builder rather than in the quiz.
 
 ## Deploying a change
 
-1. WP admin, the Headers and Footers plugin, the `build-your-quiz` snippet.
-2. Replace the script contents with `build-your-quiz.fixed.js`.
-3. Test all of these in the builder before leaving:
+1. WP admin → Pages → Build your quiz → Code editor.
+2. Select all. Paste `build-your-quiz.page.html`. Update.
+3. View the live page in a private window and test:
    - a normal sheet URL, `https://docs.google.com/spreadsheets/d/1B08mC5.../edit`
    - a published URL containing `2PACX`, which must be refused with an explanation
    - a bare sheet id
    - nonsense text
-4. Copy whatever you saved back into this directory so the two stay in step.
+4. If Generate does nothing, WordPress stripped the script. Put the contents of
+   `build-your-quiz.fixed.js` in a WPCode snippet set to run on this page only,
+   and leave the rest of the pasted HTML in place.
 
 Note there is a third implementation of this same logic in the app itself, at
 `src/routes/newsroom/+page.svelte`. Three copies of one string concatenation will

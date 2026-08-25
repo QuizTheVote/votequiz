@@ -114,19 +114,15 @@
   }
   
   /**
-   * A diverging teal-to-sand scale, saturated at both ends and washed out in the
-   * middle. This replaces a green-to-red scale, for two reasons: red reads as
-   * "bad candidate", which is not a judgement a nonpartisan tool should make,
-   * and red against green is the pair the most common form of colour blindness
-   * cannot separate, which would have flattened the strongest and weakest
-   * matches into the same bar for roughly one man in twelve.
+   * Color is emphasis, not a second legend. The number and the bar length are
+   * the facts. High matches use the accent (teal by default, or a newsroom
+   * color). Everything under 60% is ink-400 — darker than the ink-200 track —
+   * so a short bar stays visible without introducing a second hue.
    */
   function getMatchColor(percentage: number): string {
     if (percentage >= 80) return 'bg-brand-600';
     if (percentage >= 60) return 'bg-brand-400';
-    if (percentage >= 40) return 'bg-brand-200';
-    if (percentage >= 20) return 'bg-sand-300';
-    return 'bg-sand-500';
+    return 'bg-ink-400';
   }
 
   // Handle image loading errors

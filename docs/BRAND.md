@@ -55,6 +55,11 @@ newsroom's own page.
   Latin Extended and **Vietnamese** are included; Vietnamese matters because
   candidate names in US local races need it.
 
+Source Serif 4 and Source Sans 3 are optional newsroom faces (regular and
+semibold, same latin / latin-ext / Vietnamese split). They are also self-hosted
+from `static/fonts/`. Georgia and “This device” (the phone or computer’s own UI
+font) do not ship files.
+
 Every face uses `font-display: swap`, and browsers only download a face that
 something on the page actually renders in.
 

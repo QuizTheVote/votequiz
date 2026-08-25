@@ -8,6 +8,7 @@
   import EnhancedResults from '$lib/components/EnhancedResults.svelte';
   import QuestionRenderer from '$lib/components/questions/QuestionRenderer.svelte';
   import Navbar from '$lib/components/Navbar.svelte';
+  import { applyTheme, parseThemeFromSearch } from '$lib/theme';
 
   // Configuration variables - now determined by URL parameters
   let sheetId: string | null = null;
@@ -51,6 +52,7 @@
     try {
       // Read URL parameters
       const urlParams = new URLSearchParams(window.location.search);
+      applyTheme(parseThemeFromSearch(window.location.search));
       sheetId = urlParams.get('sheet');
       useSampleData = urlParams.get('demo') === 'true' || !sheetId;
       // Sheet problems are shown to everyone when they corrupt results. The rest
