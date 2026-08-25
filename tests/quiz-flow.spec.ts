@@ -147,7 +147,14 @@ test.describe('URL parameters', () => {
 		expect(sans).toMatch(/Source Sans 3/);
 	});
 
-	test('cream background is applied and an unknown bg is ignored', async ({ page }) => {
+	test('white background is applied, cream still works on old URLs, and an unknown bg is ignored', async ({ page }) => {
+		await page.goto('/?demo=true&bg=white');
+		await expect(page.getByRole('button', { name: 'Start Quiz' })).toBeVisible();
+		const white = await page.evaluate(() =>
+			getComputedStyle(document.body).backgroundColor
+		);
+		expect(white).toBe('rgb(255, 255, 255)');
+
 		await page.goto('/?demo=true&bg=cream');
 		await expect(page.getByRole('button', { name: 'Start Quiz' })).toBeVisible();
 		const cream = await page.evaluate(() =>
@@ -161,6 +168,29 @@ test.describe('URL parameters', () => {
 			getComputedStyle(document.documentElement).getPropertyValue('--qtv-bg').trim().toLowerCase()
 		);
 		expect(paper).toBe('#f4f6f7');
+	});
+
+	test('match bars keep the accent on a mid-range score', async ({ page }) => {
+		await page.goto('/?svo=true&demo=true&accent=94065e');
+		await completeQuiz(page, 5);
+
+		const bar = page.locator('[aria-controls^="candidate-details-"] .h-7 .h-full').first();
+		const style = await bar.getAttribute('style');
+		expect(style).toContain('linear-gradient');
+		expect(style).toContain('color-mix');
+		expect(style).toMatch(/var\(--qtv-brand-500\)/);
+	});
+
+	test('a custom heading color does not tint the page background', async ({ page }) => {
+		await page.goto('/?demo=true&ink=f11e1e');
+		await expect(page.getByRole('button', { name: 'Start Quiz' })).toBeVisible();
+		const paper = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+		expect(paper).toBe('rgb(244, 246, 247)');
+
+		await page.goto('/?demo=true&ink=f11e1e&bg=white');
+		await expect(page.getByRole('button', { name: 'Start Quiz' })).toBeVisible();
+		const white = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+		expect(white).toBe('rgb(255, 255, 255)');
 	});
 
 	test('an invalid accent is ignored', async ({ page }) => {
